@@ -7,6 +7,12 @@ import random
 from django.contrib import messages
 import urllib
 import json
+import subprocess
+
+from rest_framework import views, status
+from rest_framework.parsers import FileUploadParser
+from rest_framework.response import Response
+import httplib
 
 from django.views.generic import TemplateView
 
@@ -239,3 +245,12 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
     return path
+
+
+def upload(request):
+    headers = {'Content-Type': 'application/octet-stream'}
+    headers = {'X-Auth-Token': '9fe6f861b4d941f78da2c87c0cd0df6c'}
+    data = open("C:\\a.yaml", 'rb').read()
+    r = requests.put("http://176.126.91.60:8080/v1/AUTH_fa488b90ad344d3ab679e73d52e398b2/test/a.yaml", data=data, headers=headers)
+    print r.status_code
+    print r.content

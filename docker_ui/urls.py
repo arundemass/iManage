@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^RunContainer/', views.RunContainer),
     url(r'^StartContainer/', views.StartContainer),
     url(r'^AttachContainer/', views.AttachContainer),
+    url(r'^upload/', views.upload),
 
     url(r'^admin/', include(admin.site.urls)),
 ]
