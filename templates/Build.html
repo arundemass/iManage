@@ -1,0 +1,197 @@
+{% load static %}{% load compress %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Automating Workload Deployment">
+
+<title>Automating Workload Deployment &ndash; With Docker</title>
+
+	<script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+
+	<!--[if lte IE 8]>
+		<link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
+		<![endif]-->
+	<!--[if gt IE 8]><!-->
+		<link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
+	<!--<![endif]-->
+	<script>
+		$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+		$(document).ready(function (){
+			{% if messages %}
+				$("#statusModal").modal("show");
+			{% endif %}
+
+			$.ajax({
+				 url:"/GetImages/",
+				 dataType: 'json',
+				 success:function(json){
+					 data = json.content;
+					 for(i=0;i<data.length;i++){
+					 	image = data[i];
+					 	option="<option value='" + image.RepoTags + "'>" + image.RepoTags + "</option>";
+
+						$("#imageSelect").append(option);
+					 }
+				 }
+			});
+
+			$("#deployContainer").click(function(){
+				name = $("#containername").val();
+				image = $("#imageSelect").val();
+
+				$.ajax({
+				 url:"/RunContainer/?name="+name+"&image="+image,
+				 dataType: 'json',
+				 success:function(json){
+					 data = json.content;
+					 alert(data);
+				 }
+				});
+			});
+        });
+	</script>
+
+	<style>
+		.pure-menu-selected1{
+			 background: #6f6f6f none repeat scroll 0 0;
+		}
+	</style>
+</head>
+<body>
+	<div id="layout">
+		<!-- Menu toggle -->
+		<a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
+			<span></span>
+		</a>
+
+		<div id="menu">
+			<div class="pure-menu">
+				<a class="pure-menu-heading" href="/">PDS</a>
+				<ul class="pure-menu-list">
+				<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Manage</a></li>
+					<li class="pure-menu-item pure-menu-selected1"><a href="/Build"
+						class="pure-menu-link">Build</a></li>
+					<li class="pure-menu-item"><a href="/Deploy"
+						class="pure-menu-link">Deploy</a></li>
+					<li class="pure-menu-item"><a href="/Swarm" class="pure-menu-link">Docker
+							Swarm</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="main">
+			<div class="header">
+				<h1>Workload Deployment Automation</h1>
+				<h2>Docker and More...</h2>
+			</div>
+
+			<div class="content">
+				<div class="bs-example" style="margin-top: 20px;">
+					<div class="panel-group" id="accordion">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h4 class="panel-title">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">Build Docker Image</a>
+								</h4>
+							</div>
+							<div id="collapseOne" class="panel-collapse collapse in">
+								<div class="panel-body">
+									<p>Enter details below and build image</p>
+									<form action="/UploadImage/" method="POST" enctype="multipart/form-data">{% csrf_token %}
+										<div class="form-group">
+											<label for="name" class="control-label">Image Name:</label>
+											<input type="text" class="form-control" name='name' id="name" />
+										</div>
+																	<div class="form-group">
+											<label for="tag" class="control-label">Image Tag:</label>
+											<input type="text" class="form-control" name='tag' id="tag" />
+										</div>
+										<div class="form-group" id="vnfDefinitionId">
+											<label for="dockerFile" class="control-label">Dockerfile and Releated Files(tar.gz):</label>
+											<input type="file" name="dockerFile" id="dockerFile"/>
+										</div>
+										<div class="form-group">
+											<input type="submit" class="btn btn-success" value="Submit"/>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h4 class="panel-title">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">Pull Docker Image From Repository</a>
+								</h4>
+							</div>
+							<div id="collapseTwo" class="panel-collapse collapse">
+								<div class="panel-body">
+									<form action="/PullImage/" method="GET">{% csrf_token %}
+										<div class="form-group">
+											<label for="imagename" class="control-label">Image Name:</label>
+											<input type="text" class="form-control" name='name' id="imagename" />
+										</div>
+																	<div class="form-group">
+											<label for="imagetag" class="control-label">Image Tag:</label>
+											<input type="text" class="form-control" name='tag' id="imagetag" />
+										</div>
+										<div class="form-group">
+											<input type="submit" class="btn btn-success" value="Submit"/>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h4 class="panel-title">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">Push Docker Image To Repository</a>
+								</h4>
+							</div>
+							<div id="collapseThree" class="panel-collapse collapse">
+								<div class="panel-body">
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="statusModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Status</h4>
+				</div>
+				<div class="modal-body">
+					{% if messages %}
+						{% for message in messages %}
+						<span {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</span><br>
+						{% endfor %}
+					{% endif %}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<script src="{% static 'js/ui.js' %}"></script>
+</body>
+</html>

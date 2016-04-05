@@ -1,0 +1,212 @@
+{% load static %}{% load compress %}
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Automating Workload Deployment">
+
+	<title>Automating Workload Deployment &ndash; With Docker</title>
+	<script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+	<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+	<link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+
+
+	<!--[if lte IE 8]>
+				<link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
+			<![endif]-->
+	<!--[if gt IE 8]><!-->
+	<link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
+	<!--<![endif]-->
+	<script>
+		$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+		$(document).ready(function(){
+
+			$.ajax({
+				 url:"/GetImages/",
+				 dataType: 'json',
+				 success:function(json){
+					 data = json.content;
+					 for(i=0;i<data.length;i++){
+					 	image = data[i];
+					 	tr="<tr>";
+
+					 	var date = new Date(image.Created*1000);
+					 	var curr_date = date.getDate();
+						var curr_month = date.getMonth() + 1; //Months are zero based
+						var curr_year = date.getFullYear();
+
+
+					 	tr+="<td>"+image.RepoTags+"</td>";
+					 	tr+="<td>"+image.RepoTags+"</td>";
+					 	tr+="<td>"+(image.Size/(1024*1024)).toFixed(2)+" MB</td>";
+					 	tr+="<td>"+curr_date + "-" + curr_month + "-" + curr_year+"</td>";
+					 	tr+="<td><a class='btn btn-danger' href='#' onclick='deleteImage(\""+image.RepoTags+"\")'>Delete</a></td>";
+						$("#imageTable").find("tbody").append(tr);
+					 }
+					 $('#imageTable').DataTable({
+					 	"pageLength": 5
+					 });
+
+				 }
+			});
+
+			$.ajax({
+				 url:"/GetContainers/",
+				 dataType: 'json',
+				 success:function(json){
+					 data = json.content;
+					for(i=0;i<data.length;i++){
+					 	container = data[i];
+					 	tr="<tr>";
+
+					 	var date = new Date(container.Created*1000);
+					 	var curr_date = date.getDate();
+						var curr_month = date.getMonth() + 1; //Months are zero based
+						var curr_year = date.getFullYear();
+
+
+					 	tr+="<td>"+container.Image+"</td>";
+					 	tr+="<td>"+container.Command+"</td>";
+					 	tr+="<td>"+curr_date + "-" + curr_month + "-" + curr_year+"</td>";
+					 	tr+="<td>"+container.Status+"</td>";
+
+						portData="";
+					 	for(j=0;j<container.Ports.length;j++){
+					 		port = container.Ports[i];
+					 		portData+="Type: "+port.Type+"<br/>";
+					 		portData+="PublicPort: "+port.PublicPort+"<br/>";
+					 		portData+="PrivatePort: "+port.PrivatePort+"<br/>";
+					 	}
+
+					 	tr+="<td>"+portData+"</td>";
+					 	tr+="<td>"+container.Names+"</td>";
+					 	tr+="<td><a class='btn btn-success' href='#' onclick='startContainer(\""+container.Id+"\")'>Start</a><br><a class='btn btn-primary' href='#' onclick='viewContainer(\""+container.Id+"\")'>View</a><br><a class='btn btn-danger' href='#' onclick='killContainer(\""+container.Id+"\")'>Kill</a><br><a class='btn btn-danger' href='#' onclick='deleteContainer(\""+container.Id+"\")'>Remove</a></td>";
+						$("#containerTable").find("tbody").append(tr);
+					 }
+
+					 $('#containerTable').DataTable({
+					 	"pageLength": 5
+					 });
+
+				 }
+			});
+		});
+
+		function deleteImage(name){
+			$.ajax({
+				 url:"/DeleteImage/?name="+name,
+				 dataType: 'json',
+				 success:function(json){
+				 	alert(json.content);
+				 	location.reload();
+				 }
+			});
+		}
+
+		function killContainer(id){
+			$.ajax({
+				 url:"/KillContainer/?id="+id,
+				 dataType: 'json',
+				 success:function(json){
+				 	alert(json.content);
+				 	location.reload();
+				 }
+			});
+		}
+
+		function deleteContainer(id){
+			$.ajax({
+				 url:"/DeleteContainer/?id="+id,
+				 dataType: 'json',
+				 success:function(json){
+				 	alert(json.content);
+				 	location.reload();
+				 }
+			});
+		}
+
+		function startContainer(id){
+			$.ajax({
+				 url:"/StartContainer/?id="+id,
+				 dataType: 'json',
+				 success:function(json){
+				 	alert(json.content);
+				 	location.reload();
+				 }
+			});
+		}
+
+		function viewContainer(id){
+			$.ajax({
+				 url:"/AttachContainer/?id="+id,
+				 dataType: 'json',
+				 success:function(json){
+				 	alert(json.content);
+
+				 	$("#statusModal").modal("show");
+				 }
+			});
+		}
+
+	</script>
+
+	<style>
+		.content {
+			margin-left: 50px !important;
+		}
+
+		.odd {
+			background-color: #f0f0f0 !important;
+		}
+
+		.pure-menu-selected1{
+			 background: #6f6f6f none repeat scroll 0 0;
+		}
+	</style>
+
+</head>
+<body>
+	<div id="layout">
+		<!-- Menu toggle -->
+		<a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
+			<span></span>
+		</a>
+
+		<div id="menu">
+			<div class="pure-menu">
+				<a class="pure-menu-heading" href="/">PDS</a>
+				<ul class="pure-menu-list">
+				<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Manage</a></li>
+					<li class="pure-menu-item"><a href="/Build"
+						class="pure-menu-link">Build</a></li>
+					<li class="pure-menu-item"><a href="/Deploy"
+						class="pure-menu-link">Deploy</a></li>
+					<li class="pure-menu-item pure-menu-selected1"><a href="/Swarm" class="pure-menu-link">Docker
+							Swarm</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="main">
+			<div class="header">
+				<h1>Docker Swarm</h1>
+			</div>
+
+        </div>>
+
+    </div>
+
+
+	<script src="{% static 'js/ui.js' %}"></script>
+</body>
+</html>
