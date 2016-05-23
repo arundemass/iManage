@@ -58,10 +58,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'docker_ui',
         # The rest is not used with sqlite3:
-        'USER': 'remoteuser',
+        'USER': 'root',
         'PASSWORD': 'password-1',
         'CONN_MAX_AGE': 60,
-        'HOST': '104.196.21.214',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }
@@ -79,6 +79,7 @@ DJANGO_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app_deployment',
 )
 
 LOCAL_APPS = (
@@ -239,3 +240,40 @@ CORS_EXPOSE_HEADERS = (
         'x-a12n',
         'x-pseudo-folder',
     )
+
+
+#MURANO_APP related settings
+
+MURANO_CONNECT = {
+        'ip': 'controller-demodevstack-xvitqfjt.srv.ravcloud.com',
+        'tenantname':'demo',
+        'username':'demo',
+        'password':'demo',
+        'admin_token':'demo',
+        'env_name_prefix':'env1_',
+
+    }
+
+MURANO_PACKAGE_REPO_URL = 'http://storage.apps.openstack.org/'
+
+MURANO_PACKAGE_NAMES = {
+
+        'apachehttpserver' :'io.murano.apps.apache.ApacheHttpServer',
+        'apachetomcat' :'io.murano.apps.apache.Tomcat',
+        'dockerapp':'io.murano.apps.docker.DockerApp',
+        'mysql' : 'io.murano.databases.MySql',
+        'kubernetescluster' : 'io.murano.apps.docker.kubernetes.KubernetesCluster',
+        'postgresql':'io.murano.databases.PostgreSql',
+        'wordpess':'io.murano.apps.WordPress',
+        'stackatonode':'io.murano.apps.activestate.StackatoNode',
+
+
+    }
+
+MURANO_KEY_PAIR_NAME = 'app_deploy'
+
+MURANO_CUSTOM_PACKAGE_DIR = '/home/unameit/Downloads/deployPortal/static-assets/murano_packages'
+
+UPLOAD_FILE_PATH = '/home/unameit'
+
+

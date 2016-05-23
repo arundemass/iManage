@@ -1,0 +1,296 @@
+{% load static %}{% load compress %}
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Automating Workload Deployment">
+
+	<title>iManage</title>
+	<script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+	<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+
+
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+	<link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+
+
+	<!--[if lte IE 8]>
+				<link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
+			<![endif]-->
+	<!--[if gt IE 8]><!-->
+	<link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
+	<!--<![endif]-->
+	<script>
+		$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+		$(document).ready(function (){
+		    {% if messages %}
+				$("#statusModal").modal("show");
+			{% endif %}
+
+            $.ajax({
+                type: "GET",
+                  url:"/ListVNFSCatalogs/",
+                  dataType: 'json',
+                  success: function(json){
+                    vnfs = json.vnfs;
+                    for(i=0;i<vnfs.length;i++){
+                        vnfd=vnfs[i];
+                        tr="<tr>";
+                        tr+="<td>"+vnfd.name+"</td>";
+                        tr+="<td>"+vnfd.description+"</td>";
+                        tr+="<td></td>";
+                        tr+="<td>"+vnfd.id+"</td>";
+                        tr+="<td>"+vnfd.status+"</td>";
+                        tr+="<td><button class='btn btn-danger' onclick='terminateVNF(\""+vnfd.id+"\")'>Terminate</button></td>";
+                        tr+="</tr>";
+                        $("#vnfdsTable").find("tbody").append(tr);
+                    }
+                    $('#vnfdsTable').DataTable({
+                    "pageLength": 5
+                 });
+                  }
+            });
+
+             $.ajax({
+                type: "GET",
+                  url:"/ListVNFCatalogs/",
+                  dataType: 'json',
+                  success: function(json){
+                    vnfds = json.vnfds;
+                    options = "";
+                    for(i=0;i<vnfds.length;i++){
+                        vnfd=vnfds[i];
+                        options+="<option value='"+vnfd.id+"'>"+vnfd.name+"</option>";
+                    }
+                    $("#vnfCatalogName").html(options);
+                  }
+            });
+
+            $("#imageSource").change(function(){
+                if($("#imageSource").val() == "true"){
+                   $("#fileSelect").show();
+                   $("#urlSelect").hide();
+                }else{
+                    $("#fileSelect").hide();
+                    $("#urlSelect").show();
+                }
+            });
+
+            $("#createVNF").click(function(){
+                $("#createVNFModal").modal("show");
+            });
+
+            $("#submitVnfDetails").click(function(){
+                vndfname = $("#vndname").val();
+                vnfCatalogId = $("#vnfCatalogName").val();
+
+				data={};
+				data["vndfname"] = vndfname;
+				data["vnfCatalogId"] = vnfCatalogId;
+                $.ajax({
+                    url:"/DeployVnfdTemplate/?vndfname="+vndfname+"&vnfCatalogId="+vnfCatalogId,
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    success:function(json){
+                        if(json.status == "success"){
+                        	alert("VNF deployment initiated");
+                        }else{
+                        	alert("Some problem occurred when deploying VNF");
+                        }
+
+                        location.reload();
+                    }
+				});
+            });
+
+    });
+
+    function migrateLiveInstances()
+    {
+        var server_id = document.getElementById("listInstanceSelectBox").value;
+        var host = document.getElementById("listHypervisorsSelectBox").value;
+        alert(server_id+","+host);
+        $.ajax({
+		  type: "GET",
+		  url:"/migrateVM/?server_id="+server_id+"&host="+host,
+		  success: function(json){
+		   //alert(json)
+		   alert("Live Migration Status:"+json.status);
+		 } ,
+		  dataType: 'json'
+		});
+    }
+
+	function terminateVNF(id){
+		$.ajax({
+		  type: "GET",
+		  dataType: 'json',
+		  url:"/TerminateVNF/?id="+id,
+		  success: function(json){
+		   //alert(json)
+		   alert("Successfully terminated");
+		   location.reload();
+		 }
+		});
+	}
+	</script>
+
+	<style>
+		.content {
+			max-width: 100% !important;
+		}
+
+		.odd {
+			background-color: #f0f0f0 !important;
+		}
+
+		.pure-menu-selected1{
+			 background: #6f6f6f none repeat scroll 0 0;
+		}
+
+		.createSwarmModal > td{
+			height: 30px;
+		}
+
+		#masterTable > tbody > tr > td {
+			height: 40px;
+		}
+
+		#nodeTable > tbody > tr > td {
+			height: 40px;
+		}
+	</style>
+
+</head>
+<body>
+	<div id="layout">
+		<!-- Menu toggle -->
+		<a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
+			<span></span>
+		</a>
+
+		<div id="menu" style="width:165px";>
+			<div class="pure-menu">
+				<a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
+				<ul class="pure-menu-list">
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
+					<li class="pure-menu-item ">
+						<a href="/Images" class="pure-menu-link">Upload Image</a></li>
+					<li class="pure-menu-item">
+						<a href="/app_deployment/" class="pure-menu-link">Application Deployment</a></li>
+					<li class="pure-menu-item">
+						<a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFManager" class="pure-menu-link pure-menu-selected1">VNF Manager</a></li>
+
+
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
+					<li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+					<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Images and Containers</a></li>
+					<li class="pure-menu-item"><a href="/Build"
+						class="pure-menu-link">Build</a></li>
+					<li class="pure-menu-item"><a href="/Deploy"
+						class="pure-menu-link">Deploy</a></li>
+
+				</ul>
+				<div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
+			</div>
+		</div>
+
+		<div id="main">
+			<div class="header">
+				<h1>VNF Manager</h1>
+                <h2>List and Add New VNF Catalogs</h2>
+			</div>
+
+        </div>
+		<div class="content">
+            <p class="pull-left">Available VNF are listed below:</p>
+            <button id="createVNF" class="btn btn-success pull-right" style="margin-top:15px;margin-bottom:15px;">Deploy VNF</button>
+            <div style="clear:both;"></div>
+			<table id="vnfdsTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word;">
+                <thead>
+                    <tr>
+                        <th style="width:130px">Name</th>
+                        <th style="width:130px">Description</th>
+                        <th style="width:130px">Services</th>
+                        <th style="width:130px">Catalog Id</th>
+						<th style="width:130px">Status</th>
+						<th style="width:130px">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                </tbody>
+            </table>
+		</div>
+
+    </div>
+
+    <div id="createVNFModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Deploy VNF</h4>
+					<span id="addSwarmNodeMaster" style="display:none;" ></span>
+				</div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="vndname" class="control-label">VNF Name:</label>
+                            <input type="text" class="form-control" name='name' id="vndname" />
+                        </div>
+                        <div class="form-group">
+                            <label for="vnfCatalogName" class="control-label">VNF Catalog Name:</label>
+							<select id="vnfCatalogName" class="form-control">
+
+							</select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="submitVnfDetails" type="button" class="btn btn-success" data-dismiss="modal">Submit</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+			</div>
+
+		</div>
+	</div>
+
+    <div id="statusModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Status</h4>
+				</div>
+				<div class="modal-body">
+					{% if messages %}
+						{% for message in messages %}
+						<span {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</span><br>
+						{% endfor %}
+					{% endif %}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<script src="{% static 'js/ui.js' %}"></script>
+</body>
+</html>

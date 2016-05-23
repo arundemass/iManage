@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Automating Workload Deployment">
 
-<title>Automating Workload Deployment &ndash; With Docker</title>
+<title>iManage</title>
 
     <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
@@ -31,53 +31,84 @@
 			<span></span>
 		</a>
 
-		<div id="menu">
+		<div id="menu" style="width:165px";>
 			<div class="pure-menu">
-				<a class="pure-menu-heading" href="/">PDS</a>
+				<a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
 				<ul class="pure-menu-list">
-				<li class="pure-menu-item"><a href="Manage"
-						class="pure-menu-link">Manage</a></li>
-					<li class="pure-menu-item"><a href="Build"
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
+					<li class="pure-menu-item ">
+						<a href="/Images" class="pure-menu-link">Upload Image</a></li>
+					<li class="pure-menu-item">
+						<a href="/app_deployment/" class="pure-menu-link">Application Deployment</a></li>
+					<li class="pure-menu-item">
+						<a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
+
+
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
+					<li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+					<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Images and Containers</a></li>
+					<li class="pure-menu-item"><a href="/Build"
 						class="pure-menu-link">Build</a></li>
 					<li class="pure-menu-item"><a href="/Deploy"
 						class="pure-menu-link">Deploy</a></li>
-					<li class="pure-menu-item"><a href="/Swarm" class="pure-menu-link">Docker
-							Swarm</a></li>
+
 				</ul>
+				<div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
 			</div>
 		</div>
 
 		<div id="main">
 			<div class="header">
-				<h1>Workload Deployment Automation</h1>
-				<h2>Docker and More...</h2>
+				<h1>iManage</h1>
 			</div>
 
 			<div class="content">
-				<h2 class="content-subhead">How to use this application</h2>
-				<p>To be updated soon with the workflow.</p>
+				<div data-ride="carousel" class="carousel slide" id="myCarousel">
+				  <!-- Indicators -->
+				  <ol class="carousel-indicators">
+					<li class="" data-slide-to="0" data-target="#myCarousel"></li>
+					<li data-slide-to="1" data-target="#myCarousel" class="active"></li>
+					<li data-slide-to="2" data-target="#myCarousel"></li>
+				  </ol>
+				  <div role="listbox" class="carousel-inner">
+					<div class="item">
+					  <img alt="First slide" src="{% static 'images/1.PNG' %}" class="first-slide" style="width: 744px;height: 450px;">
+					  <div class="container">
+						<div class="carousel-caption">
 
-				<div class="pure-g">
-					<div class="pure-u-1-4">
-						<img class="pure-img-responsive"
-							src="http://farm3.staticflickr.com/2875/9069037713_1752f5daeb.jpg"
-							alt="Peyto Lake">
+						</div>
+					  </div>
 					</div>
-					<div class="pure-u-1-4">
-						<img class="pure-img-responsive"
-							src="http://farm3.staticflickr.com/2813/9069585985_80da8db54f.jpg"
-							alt="Train">
+					<div class="item active">
+					  <img alt="Second slide" src="{% static 'images/2.PNG' %}" class="second-slide" style="width: 744px;height: 450px;">
+					  <div class="container">
+						<div class="carousel-caption">
+
+						</div>
+					  </div>
 					</div>
-					<div class="pure-u-1-4">
-						<img class="pure-img-responsive"
-							src="http://farm6.staticflickr.com/5456/9121446012_c1640e42d0.jpg"
-							alt="T-Shirt Store">
+					<div class="item">
+					  <img alt="Third slide" src="{% static 'images/3.PNG' %}" class="third-slide" style="width: 744px;height: 450px;">
+					  <div class="container">
+						<div class="carousel-caption">
+
+						</div>
+					  </div>
 					</div>
-					<div class="pure-u-1-4">
-						<img class="pure-img-responsive"
-							src="http://farm8.staticflickr.com/7357/9086701425_fda3024927.jpg"
-							alt="Mountain">
-					</div>
+				  </div>
+				  <a data-slide="prev" role="button" href="#myCarousel" class="left carousel-control">
+					<span aria-hidden="true" class="glyphicon glyphicon-chevron-left"></span>
+					<span class="sr-only">Previous</span>
+				  </a>
+				  <a data-slide="next" role="button" href="#myCarousel" class="right carousel-control">
+					<span aria-hidden="true" class="glyphicon glyphicon-chevron-right"></span>
+					<span class="sr-only">Next</span>
+				  </a>
 				</div>
 			</div>
 		</div>

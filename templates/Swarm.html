@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Automating Workload Deployment">
 
-	<title>Automating Workload Deployment &ndash; With Docker</title>
+	<title>iManage</title>
 	<script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -27,83 +27,313 @@
 	<link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
 	<!--<![endif]-->
 	<script>
+		var selectBoxContent = "";
 		$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
 		$(document).ready(function(){
 
 			$.ajax({
-				 url:"/GetImages/",
+				 url:"/GetNodes/",
 				 dataType: 'json',
 				 success:function(json){
-					 data = json.content;
-					 for(i=0;i<data.length;i++){
-					 	image = data[i];
+					 for(i=0;i<json.length;i++){
+					 	node = json[i];
+					 	if(node.selected == "true"){
+					 		$("#nodes").append("<option value="+node.id+" selected>"+node.name+"("+node.ip+")</option>");
+					 	}else{
+					 		$("#nodes").append("<option value="+node.id+">"+node.name+"("+node.ip+")</option>");
+					 	}
+
+					 	selectBoxContent += "<option value="+node.ip+">"+node.name+"("+node.ip+")</option>";
+
 					 	tr="<tr>";
-
-					 	var date = new Date(image.Created*1000);
-					 	var curr_date = date.getDate();
-						var curr_month = date.getMonth() + 1; //Months are zero based
-						var curr_year = date.getFullYear();
-
-
-					 	tr+="<td>"+image.RepoTags+"</td>";
-					 	tr+="<td>"+image.RepoTags+"</td>";
-					 	tr+="<td>"+(image.Size/(1024*1024)).toFixed(2)+" MB</td>";
-					 	tr+="<td>"+curr_date + "-" + curr_month + "-" + curr_year+"</td>";
-					 	tr+="<td><a class='btn btn-danger' href='#' onclick='deleteImage(\""+image.RepoTags+"\")'>Delete</a></td>";
-						$("#imageTable").find("tbody").append(tr);
+					 	tr+="<td>"+node.name+"</td>";
+					 	tr+="<td>"+node.ip+"</td>";
+					 	tr+="<td>"+node.port+"</td>";
+					 	tr+="<td><button class='btn btn-primary' href='#' onclick='editNode(\""+node.id+"\", \""+node.name+"\", \""+node.ip+"\", \""+node.port+"\")'>Edit</button></td>";
+					 	tr+="<td><button class='btn btn-danger' href='#' onclick='deleteNode(\""+node.id+"\")'>Delete</button></td>";
+						tr+="</tr>";
+						$("#dockerNodeTable").find("tbody").append(tr);
 					 }
-					 $('#imageTable').DataTable({
+
+					 $('#dockerNodeTable').DataTable({
 					 	"pageLength": 5
 					 });
 
+					 $(".ip").html(selectBoxContent);
 				 }
 			});
 
 			$.ajax({
-				 url:"/GetContainers/",
+				 url:"/GetSwarms/",
 				 dataType: 'json',
 				 success:function(json){
-					 data = json.content;
-					for(i=0;i<data.length;i++){
-					 	container = data[i];
+				 	 json = json.content;
+					 for(i=0;i<json.length;i++){
+					 	master = json[i];
+					 	id = master.id;
+					 	ip = master.ip;
+					 	port = master.port;
+					 	name = master.name;
+					 	nodes = master.nodes;
 					 	tr="<tr>";
-
-					 	var date = new Date(container.Created*1000);
-					 	var curr_date = date.getDate();
-						var curr_month = date.getMonth() + 1; //Months are zero based
-						var curr_year = date.getFullYear();
-
-
-					 	tr+="<td>"+container.Image+"</td>";
-					 	tr+="<td>"+container.Command+"</td>";
-					 	tr+="<td>"+curr_date + "-" + curr_month + "-" + curr_year+"</td>";
-					 	tr+="<td>"+container.Status+"</td>";
-
-						portData="";
-					 	for(j=0;j<container.Ports.length;j++){
-					 		port = container.Ports[i];
-					 		portData+="Type: "+port.Type+"<br/>";
-					 		portData+="PublicPort: "+port.PublicPort+"<br/>";
-					 		portData+="PrivatePort: "+port.PrivatePort+"<br/>";
+					 	tr+="<td>"+name+"</td>";
+					 	tr+="<td>"+ip+"</td>";
+					 	tr+="<td>"+port+"</td>";
+						row='';
+					 	for(j=0;j<nodes.length;j++){
+					 		node = nodes[j];
+					 		nodeid = node.id
+							nodeip = node.ip
+							nodeport = node.port
+							nodename = node.name
+							row += '<div class="row">';
+							row += '  <div class="col-md-7">'+nodename+'('+nodeip+')</div>';
+							row += '  <div class="col-md-2"><button class="btn btn-danger" href="#" onclick="deleteSwarmNode(\''+ip+'\',\''+port+'\',\''+nodeid+'\')">-</button></div>';
+							row +='</div>';
 					 	}
-
-					 	tr+="<td>"+portData+"</td>";
-					 	tr+="<td>"+container.Names+"</td>";
-					 	tr+="<td><a class='btn btn-success' href='#' onclick='startContainer(\""+container.Id+"\")'>Start</a><br><a class='btn btn-primary' href='#' onclick='viewContainer(\""+container.Id+"\")'>View</a><br><a class='btn btn-danger' href='#' onclick='killContainer(\""+container.Id+"\")'>Kill</a><br><a class='btn btn-danger' href='#' onclick='deleteContainer(\""+container.Id+"\")'>Remove</a></td>";
-						$("#containerTable").find("tbody").append(tr);
+					 	tr+="<td>"+row+"</td>";
+					 	tr+="<td><button class='btn btn-primary' href='#' onclick='addSwarmNode(\""+id+"\")'>Add Node</button></td>";
+					 	tr+="<td><button class='btn btn-danger' href='#' onclick='deleteSwarm(\""+id+"\")'>Delete</button></td>";
+					 	tr+="</tr>";
+					 	$("#dockerSwarmTable").find("tbody").append(tr);
 					 }
 
-					 $('#containerTable').DataTable({
+					 $('#dockerSwarmTable').DataTable({
 					 	"pageLength": 5
 					 });
-
 				 }
+			});
+
+			$("#nodes").change(function(){
+				$.ajax({
+					 url:"/ChangeNode/?id="+$("#nodes").val(),
+					 dataType: 'json',
+					 success:function(json){
+						 location.reload();
+					 }
+				});
+			});
+
+			$(".addMaster").click(function(){
+				tr = '<tr>'
+				tr += '<td><input type="text" class="form-control name" name="name" placeholder="Container Name" /></td>'
+				tr += '<td><select class="form-control ip" style="margin-left:10px;">'+selectBoxContent+'</select></td>'
+				tr += '<td><input type="text" class="form-control port" placeholder="Port" style="margin-left:20px;"/></td>'
+				tr += '<td><button type="button" class="btn btn-danger removeMaster" style="margin-left:30px;" onclick="removeElement(this)">-</button></td>'
+				tr += '</tr>'
+				$("#masterTable").find("tbody").append(tr);
+			});
+
+			$(".addNode").click(function(){
+				tr = '<tr>'
+				tr += '<td><input type="text" class="form-control name" name="name" placeholder="Container Name" /></td>'
+				tr += '<td><select class="form-control ip" style="margin-left:10px;">'+selectBoxContent+'</select></td>'
+				tr += '<td><input type="text" class="form-control port" placeholder="Port" style="margin-left:20px;"/></td>'
+				tr += '<td><button type="button" class="btn btn-danger removeNode" style="margin-left:30px;" onclick="removeElement(this)">-</button></td>'
+				tr += '</tr>'
+				$("#nodeTable").find("tbody").append(tr);
+			});
+
+			$("#addNewSwarm").click(function(){
+				$("#createSwarmModal").modal("show");
+			});
+
+
+			$("#addNewNode").click(function(){
+				$("#newNodeName").val("");
+				$("#newNodeIP").val("");
+				$("#newNodePort").val("");
+				$("#addNewNodeModal").modal("show");
+			});
+
+			$("#swarmNodeSubmit").click(function(){
+				name = $("#swarmNodeName").val();
+				ip = $("#swarmNodeIP").val();
+				port = $("#swarmNodePort").val();
+				master = $("#addSwarmNodeMaster").html();
+				$.ajax({
+					 url:"/AddSwarmNode/?name="+name+"&ip="+ip+"&port="+port+"&id="+master,
+					 dataType: 'json',
+					 success:function(json){
+						if(json.status == "success"){
+							alert(json.content);
+							location.reload();
+						}else{
+							alert(json.content);
+						}
+					 }
+				});
+			});
+
+			$("#newNodeSubmit").click(function(){
+				id = $("#newNodeId").html();
+				name = $("#newNodeName").val();
+				ip = $("#newNodeIP").val();
+				port = $("#newNodePort").val();
+
+				if(!ValidateIPaddress(ip)){
+					alert("Invalid IP Address:" + ip);
+					return;
+				}
+
+				if(name == ""){
+					alert("Name cannot be empty");
+					return;
+				}
+
+				if(port == ""){
+					alert("Port cannot be empty");
+					return;
+				}else if(isNaN(port)){
+					alert("Port cannot be a string");
+					return;
+				}
+
+				$("#addNewNodeModal").modal("hide");
+
+				$.ajax({
+					 url:"/AddNode/?name="+name+"&ip="+ip+"&port="+port,
+					 dataType: 'json',
+					 success:function(json){
+						if(json.status == "success"){
+							alert(json.content);
+							location.reload();
+						}else{
+							alert(json.content);
+						}
+					 }
+				});
+			});
+
+			$("#editSubmit").click(function(){
+				id = $("#editNodeId").html();
+				name = $("#nodeName").val();
+				ip = $("#nodeIP").val();
+				port = $("#nodePort").val();
+
+				if(!ValidateIPaddress(ip)){
+					alert("Invalid IP Address:" + ip);
+					return;
+				}
+
+				if(name == ""){
+					alert("Name cannot be empty");
+					return;
+				}
+
+				if(port == ""){
+					alert("Port cannot be empty");
+					return;
+				}else if(isNaN(port)){
+					alert("Port cannot be a string");
+					return;
+				}
+
+				$("#editModal").modal("hide");
+				$.ajax({
+					 url:"/EditNode/?id="+id+"&name="+name+"&ip="+ip+"&port="+port,
+					 dataType: 'json',
+					 success:function(json){
+						if(json.status == "success"){
+							alert(json.content);
+							location.reload();
+						}else{
+							alert(json.content);
+						}
+					 }
+				});
+			});
+
+			$("#submitDetails").click(function(){
+				jsonData={} //main json
+				masters=[]
+				nodes=[]
+
+				trs = $("#masterTable").find("tbody").find("tr");
+				for(i=0;i < trs.length;i++){
+					tr=trs[i];
+					ip = $(tr).find(".ip").val();
+					port = $(tr).find(".port").val();
+					name = $(tr).find(".name").val();
+
+					if(name == ""){
+						alert("Name cannot be empty");
+						return;
+					}
+
+					if(!ValidateIPaddress(ip)){
+						alert("Invalid IP Address:" + ip);
+						return;
+					}
+
+					if(port == ""){
+						alert("Port cannot be empty");
+						return;
+					}else if(isNaN(port)){
+						alert("Port cannot be a string");
+						return;
+					}
+
+
+					m={};
+					m["ip"]=ip;
+					m["port"]=port;
+					m["name"]=name;
+					masters.push(m);
+				}
+
+				nodetrs = $("#nodeTable").find("tbody").find("tr");
+				for(i=0;i < nodetrs.length;i++){
+					tr=nodetrs[i];
+					ip = $(tr).find(".ip").val();
+					port = $(tr).find(".port").val();
+					name = $(tr).find(".name").val();
+
+					if(name == ""){
+						alert("Name cannot be empty");
+						return;
+					}
+
+					if(!ValidateIPaddress(ip)){
+						alert("Invalid IP Address:" + ip);
+						return;
+					}
+
+					if(port == ""){
+						alert("Port cannot be empty");
+						return;
+					}else if(isNaN(port)){
+						alert("Port cannot be a string");
+						return;
+					}
+
+
+					n={};
+					n["ip"]=ip;
+					n["port"]=port;
+					n["name"]=name;
+					nodes.push(n);
+				}
+				jsonData["master"]=masters;
+				jsonData["node"]=nodes;
+				//alert(JSON.stringify(jsonData));
+				$("#createSwarmModal").modal("hide");
+				$.ajax({
+					url: "/HandleSwarm/",
+					type: "POST",
+					data: JSON.stringify(jsonData),
+					contentType: "application/json",
+					success:function(json){
+						alert(json.content);
+						location.reload();
+					}
+				});
 			});
 		});
 
-		function deleteImage(name){
+		function deleteSwarmNode(master_ip, master_port, node_id){
 			$.ajax({
-				 url:"/DeleteImage/?name="+name,
+				 url:"/RemoveSwarmNode/?ip="+master_ip+"&port="+master_port+"&nodeid="+nodeid,
 				 dataType: 'json',
 				 success:function(json){
 				 	alert(json.content);
@@ -112,9 +342,14 @@
 			});
 		}
 
-		function killContainer(id){
+		function addSwarmNode(swarmid){
+			$("#addSwarmNodeMaster").html(swarmid);
+			$("#addSwarmNodeModal").modal("show");
+		}
+
+		function deleteSwarm(swarmid){
 			$.ajax({
-				 url:"/KillContainer/?id="+id,
+				 url:"/DeleteSwarm/?id="+swarmid,
 				 dataType: 'json',
 				 success:function(json){
 				 	alert(json.content);
@@ -123,9 +358,20 @@
 			});
 		}
 
-		function deleteContainer(id){
+		function ValidateIPaddress(ipaddress){
+		 	if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)){
+				return (true)
+		  	}
+			return (false)
+		}
+
+		function removeElement(obj){
+			$(obj).closest("tr").remove();
+		}
+
+		function deleteNode(id){
 			$.ajax({
-				 url:"/DeleteContainer/?id="+id,
+				 url:"/DeleteNode/?id="+id,
 				 dataType: 'json',
 				 success:function(json){
 				 	alert(json.content);
@@ -134,34 +380,20 @@
 			});
 		}
 
-		function startContainer(id){
-			$.ajax({
-				 url:"/StartContainer/?id="+id,
-				 dataType: 'json',
-				 success:function(json){
-				 	alert(json.content);
-				 	location.reload();
-				 }
-			});
-		}
+		function editNode(id, name, ip, port){
+			$("#editNodeId").html(id);
+			$("#nodeName").val(name);
+			$("#nodeIP").val(ip);
+			$("#nodePort").val(port);
 
-		function viewContainer(id){
-			$.ajax({
-				 url:"/AttachContainer/?id="+id,
-				 dataType: 'json',
-				 success:function(json){
-				 	alert(json.content);
-
-				 	$("#statusModal").modal("show");
-				 }
-			});
+			$("#editModal").modal("show");
 		}
 
 	</script>
 
 	<style>
 		.content {
-			margin-left: 50px !important;
+			max-width: 100% !important;
 		}
 
 		.odd {
@@ -170,6 +402,18 @@
 
 		.pure-menu-selected1{
 			 background: #6f6f6f none repeat scroll 0 0;
+		}
+
+		.createSwarmModal > td{
+			height: 30px;
+		}
+
+		#masterTable > tbody > tr > td {
+			height: 40px;
+		}
+
+		#nodeTable > tbody > tr > td {
+			height: 40px;
 		}
 	</style>
 
@@ -181,31 +425,265 @@
 			<span></span>
 		</a>
 
-		<div id="menu">
+		<div id="menu" style="width:165px";>
 			<div class="pure-menu">
-				<a class="pure-menu-heading" href="/">PDS</a>
+				<a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
 				<ul class="pure-menu-list">
-				<li class="pure-menu-item"><a href="/Manage"
-						class="pure-menu-link">Manage</a></li>
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
+					<li class="pure-menu-item ">
+						<a href="/Images" class="pure-menu-link">Upload Image</a></li>
+					<li class="pure-menu-item">
+						<a href="/app_deployment/" class="pure-menu-link">Application Deployment</a></li>
+					<li class="pure-menu-item">
+						<a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
+
+
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
+					<li class="pure-menu-item pure-menu-selected1"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+					<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Images and Containers</a></li>
 					<li class="pure-menu-item"><a href="/Build"
 						class="pure-menu-link">Build</a></li>
 					<li class="pure-menu-item"><a href="/Deploy"
 						class="pure-menu-link">Deploy</a></li>
-					<li class="pure-menu-item pure-menu-selected1"><a href="/Swarm" class="pure-menu-link">Docker
-							Swarm</a></li>
+
 				</ul>
+				<div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
 			</div>
 		</div>
 
 		<div id="main">
 			<div class="header">
-				<h1>Docker Swarm</h1>
+				<h1>Nodes</h1>
+				<h2>Manage Nodes and Swarms</h2>
 			</div>
 
-        </div>>
+        </div>
+		<div class="content" style="margin-top:20px;">
+			<div class="row" style="margin-top:20px;">
+				<div class="col-xs-2">
+					<h4>Select Docker Node:</h4>
+				</div>
+				<div class="col-xs-6">
+					 <select id="nodes" style="min-width: 273px !important;width: 30%;clear:both;" class="form-control">
+					</select>
+				</div>
+			</div>
+			<div class="panel-group" id="accordion">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">Nodes</a>
+						</h4>
+					</div>
+					<div id="collapseOne" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<p class="pull-left" style="font-weight: bold;">Available Docker nodes are listed below:</p>
+							<button id="addNewNode" type="button" class="btn btn-success pull-right" style="margin-bottom:10px;">Add New Node</button>
+							<div style="clear:both;"></div>
+							<table id="dockerNodeTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word;">
+								<thead>
+									<tr>
+										<th style="width:130px">Name</th>
+										<th style="width:130px">IP</th>
+										<th style="width:130px">Port</th>
+										<th style="width:130px">Actions</th>
+										<th style="width:130px">Actions</th>
+									</tr>
+								</thead>
 
-    </div>
+								<tbody>
 
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">Swarm</a>
+						</h4>
+					</div>
+					<div id="collapseTwo" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<p class="pull-left" style="font-weight: bold;">Available Docker Swarms are listed below:</p>
+							<button id="addNewSwarm" type="button" class="btn btn-success pull-right" style="margin-bottom:10px;">Add New Swarm</button>
+							<div style="clear:both;"></div>
+							<table id="dockerSwarmTable" class="pure-table">
+								<thead>
+									<tr>
+										<th style="width:10%">Name</th>
+										<th style="width:10%">Master IP</th>
+										<th style="width:10%">Master Port</th>
+										<th style="width:17%">Client Nodes</th>
+										<th style="width:10%">Actions</th>
+										<th style="width:10%">Actions</th>
+									</tr>
+								</thead>
+
+								<tbody>
+
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div id="editModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Edit Node</h4>
+					<span id="editNodeId" style="display:none;"></span>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="nodeName" class="control-label">Node Name:</label>
+						<input type="text" class="form-control" name='name' id="nodeName" />
+					</div>
+					<div class="form-group">
+						<label for="nodeIP" class="control-label">IP:</label>
+						<input type="text" class="form-control" name='name' id="nodeIP" />
+					</div>
+					<div class="form-group">
+						<label for="nodePort" class="control-label">Port:</label>
+						<input type="text" class="form-control" name='name' id="nodePort" />
+					</div>
+
+				</div>
+				<div class="modal-footer">
+					<button id="editSubmit" type="button" class="btn btn-success">Submit</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div id="addNewNodeModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Add Node</h4>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="newNodeName" class="control-label">Node Name:</label>
+						<input type="text" class="form-control" name='name' id="newNodeName" />
+					</div>
+					<div class="form-group">
+						<label for="newNodeIP" class="control-label">IP:</label>
+						<input type="text" class="form-control" name='name' id="newNodeIP" />
+					</div>
+					<div class="form-group">
+						<label for="newNodePort" class="control-label">Port:</label>
+						<input type="text" class="form-control" name='name' id="newNodePort" />
+					</div>
+
+				</div>
+				<div class="modal-footer">
+					<button id="newNodeSubmit" type="button" class="btn btn-success">Submit</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div id="createSwarmModal" class="modal fade" role="dialog">
+		<div class="modal-dialog" style="width:60%;">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Create New Swarm</h4>
+				</div>
+				<div class="modal-body">
+					<p style="font-weight: bold;">Enter the Swarm Master Details:</p>
+					<table id="masterTable" style="width:100%">
+						<tbody>
+							<tr>
+								<td><input type="text" class="form-control name" name='name' placeholder="Container Name" /></td>
+								<td><select class="form-control ip" name='name' style="margin-left:10px;"></select></td>
+								<td><input type="text" class="form-control port" name='name' placeholder="Port" style="margin-left:20px;"/></td>
+								<td><button type="button" class="btn btn-success addMaster" style="margin-left:30px;">+</button></td>
+							</tr>
+						</tbody>
+					</table>
+					<br/>
+					<br/>
+					<p style="font-weight: bold;">Enter the Swarm Node Details:</p>
+					<table id="nodeTable" style="width:100%">
+						<tbody>
+							<tr>
+								<td><input type="text" class="form-control name" name='name' placeholder="Container Name" /></td>
+								<td><select class="form-control ip" name='name' style="margin-left:10px;" ></select></td>
+								<td><input type="text" class="form-control port" name='name' placeholder="Port" style="margin-left:20px;"/></td>
+								<td><button type="button" class="btn btn-success addNode" style="margin-left:30px;">+</button></td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+				<div class="modal-footer">
+					<button id="submitDetails" type="button" class="btn btn-success">Submit</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div id="addSwarmNodeModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Add Node To Swarm</h4>
+					<span id="addSwarmNodeMaster" style="display:none;" ></span>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="newNodeName" class="control-label">Node Name:</label>
+						<input type="text" class="form-control" name='name' id="swarmNodeName" />
+					</div>
+					<div class="form-group">
+						<label for="newNodeIP" class="control-label">IP:</label>
+						<select id="swarmNodeIP" class="form-control ip" name='name'></select>
+					</div>
+					<div class="form-group">
+						<label for="newNodePort" class="control-label">Port:</label>
+						<input type="text" class="form-control" name='name' id="swarmNodePort" />
+					</div>
+
+				</div>
+				<div class="modal-footer">
+					<button id="swarmNodeSubmit" type="button" class="btn btn-success">Submit</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
 
 	<script src="{% static 'js/ui.js' %}"></script>
 </body>

@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Automating Workload Deployment">
 
-	<title>Automating Workload Deployment &ndash; With Docker</title>
+	<title>iManage</title>
 	<script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -30,6 +30,36 @@
 		$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
 		$(document).ready(function(){
 
+			$.ajax({
+				 url:"/GetNodes/",
+				 dataType: 'json',
+				 success:function(json){
+					 for(i=0;i<json.length;i++){
+					 	node = json[i];
+					 	if(node.selected == "true"){
+					 		$("#nodes").append("<option value="+node.id+" selected>"+node.name+"("+node.ip+")</option>");
+					 	}else{
+					 		$("#nodes").append("<option value="+node.id+">"+node.name+"("+node.ip+")</option>");
+					 	}
+					 }
+					 populateImages();
+				 }
+			});
+
+			$("#nodes").change(function(){
+				$.ajax({
+					 url:"/ChangeNode/?id="+$("#nodes").val(),
+					 dataType: 'json',
+					 success:function(json){
+						 location.reload();
+					 }
+				});
+			});
+
+
+		});
+
+		function populateImages(){
 			$.ajax({
 				 url:"/GetImages/",
 				 dataType: 'json',
@@ -58,7 +88,9 @@
 
 				 }
 			});
+		}
 
+		function populateContainers(){
 			$.ajax({
 				 url:"/GetContainers/",
 				 dataType: 'json',
@@ -80,8 +112,9 @@
 					 	tr+="<td>"+container.Status+"</td>";
 
 						portData="";
+
 					 	for(j=0;j<container.Ports.length;j++){
-					 		port = container.Ports[i];
+					 		port = container.Ports[j];
 					 		portData+="Type: "+port.Type+"<br/>";
 					 		portData+="PublicPort: "+port.PublicPort+"<br/>";
 					 		portData+="PrivatePort: "+port.PrivatePort+"<br/>";
@@ -89,7 +122,10 @@
 
 					 	tr+="<td>"+portData+"</td>";
 					 	tr+="<td>"+container.Names+"</td>";
-					 	tr+="<td><a class='btn btn-success' href='#' onclick='startContainer(\""+container.Id+"\")'>Start</a><br><a class='btn btn-primary' href='#' onclick='viewContainer(\""+container.Id+"\")'>View</a><br><a class='btn btn-danger' href='#' onclick='killContainer(\""+container.Id+"\")'>Kill</a><br><a class='btn btn-danger' href='#' onclick='deleteContainer(\""+container.Id+"\")'>Remove</a></td>";
+					 	tr+="<td><a class='btn btn-success' href='#' onclick='startContainer(\""+container.Id+"\")'>Start</a></td>";
+						tr+="<td><a class='btn btn-primary' href='#' onclick='viewContainer(\""+container.Id+"\")'>View</a></td>";
+						tr+="<td><a class='btn btn-danger' href='#' onclick='killContainer(\""+container.Id+"\")'>Kill</a></td>";
+						tr+="<td><a class='btn btn-danger' href='#' onclick='deleteContainer(\""+container.Id+"\")'>Remove</a></td>";
 						$("#containerTable").find("tbody").append(tr);
 					 }
 
@@ -99,7 +135,7 @@
 
 				 }
 			});
-		});
+		}
 
 		function deleteImage(name){
 			$.ajax({
@@ -161,7 +197,7 @@
 
 	<style>
 		.content {
-			margin-left: 50px !important;
+			max-width: 100% !important;
 		}
 
 		.odd {
@@ -194,14 +230,16 @@
 				name = $("#containername").val();
 				image = $("#imageSelect").val();
 				commands = $("#commands").val();
+				environments = $("#environments").val();
+				volumes = $("#volumes").val();
 
 				$.ajax({
-				 url:"/RunContainer/?name="+name+"&image="+image+"&commands="+commands,
-				 dataType: 'json',
-				 success:function(json){
-					 data = json.content;
-					 alert(data);
-				 }
+					 url:"/RunContainer/?name="+name+"&image="+image+"&commands="+commands+"&environments="+environments+"&volumes="+volumes,
+					 dataType: 'json',
+					 success:function(json){
+						 data = json.content;
+						 alert(data);
+					 }
 				});
 			});
         });
@@ -214,19 +252,34 @@
 			<span></span>
 		</a>
 
-		<div id="menu">
+		<div id="menu" style="width:165px";>
 			<div class="pure-menu">
-				<a class="pure-menu-heading" href="/">PDS</a>
+				<a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
 				<ul class="pure-menu-list">
-				<li class="pure-menu-item"><a href="/Manage"
-						class="pure-menu-link">Manage</a></li>
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
+					<li class="pure-menu-item ">
+						<a href="/Images" class="pure-menu-link">Upload Image</a></li>
+					<li class="pure-menu-item">
+						<a href="/app_deployment/" class="pure-menu-link">Application Deployment</a></li>
+					<li class="pure-menu-item">
+						<a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+					<li class="pure-menu-item">
+						<a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
+
+
+					<li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
+					<li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+					<li class="pure-menu-item"><a href="/Manage"
+						class="pure-menu-link">Images and Containers</a></li>
 					<li class="pure-menu-item"><a href="/Build"
 						class="pure-menu-link">Build</a></li>
-					<li class="pure-menu-item"><a href="/Deploy"
-						class="pure-menu-link pure-menu-selected1">Deploy</a></li>
-					<li class="pure-menu-item"><a href="/Swarm" class="pure-menu-link">Docker
-							Swarm</a></li>
+					<li class="pure-menu-item pure-menu-selected1"><a href="/Deploy"
+						class="pure-menu-link">Deploy</a></li>
+
 				</ul>
+				<div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
 			</div>
 		</div>
 
@@ -236,14 +289,31 @@
                 <h2>Deploy Docker Images</h2>
 			</div>
             <div class="content">
+				<div class="row" style="margin-top:20px;">
+					<div class="col-xs-2">
+						<h4>Select Docker Node:</h4>
+					</div>
+					<div class="col-xs-6">
+						 <select id="nodes" style="min-width: 273px !important;width: 30%;clear:both;" class="form-control">
+						</select>
+					</div>
+				</div>
 				<h2 class="content-subhead">Deploy a Container From Available Images</h2>
                 <div class="form-group">
                         <label for="containername" class="control-label">Container Name:</label>
                         <input type="text" class="form-control" name='name' id="containername" />
                 </div>
                 <div class="form-group">
-                        <label for="commands" class="control-label">Commands(space separated):</label>
+                        <label for="commands" class="control-label">Commands(comma separated):</label>
                         <input type="text" class="form-control" name='name' id="commands" />
+                </div>
+				<div class="form-group">
+                        <label for="environments" class="control-label">Environments(comma separated):</label>
+                        <input type="text" class="form-control" name='name' id="environments" />
+                </div>
+				<div class="form-group">
+                        <label for="volumes" class="control-label">Volumes(comma separated):</label>
+                        <input type="text" class="form-control" name='name' id="volumes" />
                 </div>
                 <div class="form-group">
                     <label for="imageSelect" class="control-label">Select Image:</label>
@@ -253,7 +323,7 @@
                 </div>
                 <a class='btn btn-primary' href='#' id="deployContainer">Deploy</a></td>
             </div>
-        </div>>
+        </div>
 
     </div>
 

@@ -1,0 +1,815 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Automating Workload Deployment">
+
+<title>iManage</title>
+
+    <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+	<script src="http://malsup.github.io/jquery.blockUI.js"></script>
+	<script src="{% static 'js/searchableOptionList.js' %}"></script>
+	
+	<script src="{% static 'js/dmuploader.js' %}"></script>
+	
+
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+	<link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
+		 <link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+        <link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
+		<link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
+    <!--<![endif]-->
+	
+	
+	<link rel="stylesheet" href="{% static 'css/simple-demo.css' %}">
+	
+	
+<style>	
+#fountainTextG{
+	width:234px;
+	margin:auto;
+}
+
+.fountainTextG{
+	color:rgb(0,0,0);
+	font-family:Arial;
+	font-size:24px;
+	text-decoration:none;
+	font-weight:normal;
+	font-style:normal;
+	float:left;
+	animation-name:bounce_fountainTextG;
+		-o-animation-name:bounce_fountainTextG;
+		-ms-animation-name:bounce_fountainTextG;
+		-webkit-animation-name:bounce_fountainTextG;
+		-moz-animation-name:bounce_fountainTextG;
+	animation-duration:2.09s;
+		-o-animation-duration:2.09s;
+		-ms-animation-duration:2.09s;
+		-webkit-animation-duration:2.09s;
+		-moz-animation-duration:2.09s;
+	animation-iteration-count:infinite;
+		-o-animation-iteration-count:infinite;
+		-ms-animation-iteration-count:infinite;
+		-webkit-animation-iteration-count:infinite;
+		-moz-animation-iteration-count:infinite;
+	animation-direction:normal;
+		-o-animation-direction:normal;
+		-ms-animation-direction:normal;
+		-webkit-animation-direction:normal;
+		-moz-animation-direction:normal;
+	transform:scale(.5);
+		-o-transform:scale(.5);
+		-ms-transform:scale(.5);
+		-webkit-transform:scale(.5);
+		-moz-transform:scale(.5);
+}#fountainTextG_1{
+	animation-delay:0.75s;
+		-o-animation-delay:0.75s;
+		-ms-animation-delay:0.75s;
+		-webkit-animation-delay:0.75s;
+		-moz-animation-delay:0.75s;
+}
+#fountainTextG_2{
+	animation-delay:0.9s;
+		-o-animation-delay:0.9s;
+		-ms-animation-delay:0.9s;
+		-webkit-animation-delay:0.9s;
+		-moz-animation-delay:0.9s;
+}
+#fountainTextG_3{
+	animation-delay:1.05s;
+		-o-animation-delay:1.05s;
+		-ms-animation-delay:1.05s;
+		-webkit-animation-delay:1.05s;
+		-moz-animation-delay:1.05s;
+}
+#fountainTextG_4{
+	animation-delay:1.2s;
+		-o-animation-delay:1.2s;
+		-ms-animation-delay:1.2s;
+		-webkit-animation-delay:1.2s;
+		-moz-animation-delay:1.2s;
+}
+#fountainTextG_5{
+	animation-delay:1.35s;
+		-o-animation-delay:1.35s;
+		-ms-animation-delay:1.35s;
+		-webkit-animation-delay:1.35s;
+		-moz-animation-delay:1.35s;
+}
+#fountainTextG_6{
+	animation-delay:1.5s;
+		-o-animation-delay:1.5s;
+		-ms-animation-delay:1.5s;
+		-webkit-animation-delay:1.5s;
+		-moz-animation-delay:1.5s;
+}
+#fountainTextG_7{
+	animation-delay:1.64s;
+		-o-animation-delay:1.64s;
+		-ms-animation-delay:1.64s;
+		-webkit-animation-delay:1.64s;
+		-moz-animation-delay:1.64s;
+}
+
+
+
+
+@keyframes bounce_fountainTextG{
+	0%{
+		transform:scale(1);
+		color:rgb(0,0,0);
+	}
+
+	100%{
+		transform:scale(.5);
+		color:rgb(255,255,255);
+	}
+}
+
+@-o-keyframes bounce_fountainTextG{
+	0%{
+		-o-transform:scale(1);
+		color:rgb(0,0,0);
+	}
+
+	100%{
+		-o-transform:scale(.5);
+		color:rgb(255,255,255);
+	}
+}
+
+@-ms-keyframes bounce_fountainTextG{
+	0%{
+		-ms-transform:scale(1);
+		color:rgb(0,0,0);
+	}
+
+	100%{
+		-ms-transform:scale(.5);
+		color:rgb(255,255,255);
+	}
+}
+
+@-webkit-keyframes bounce_fountainTextG{
+	0%{
+		-webkit-transform:scale(1);
+		color:rgb(0,0,0);
+	}
+
+	100%{
+		-webkit-transform:scale(.5);
+		color:rgb(255,255,255);
+	}
+}
+
+@-moz-keyframes bounce_fountainTextG{
+	0%{
+		-moz-transform:scale(1);
+		color:rgb(0,0,0);
+	}
+
+	100%{
+		-moz-transform:scale(.5);
+		color:rgb(255,255,255);
+	}
+}
+</style>	
+	
+<script type="text/javascript">
+    //$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+
+    var apacheserver = ''
+    var tomcat = ''
+    var sql = ''
+    var dc = ''
+    var kc = ''
+    var ps = ''
+    var wp = ''
+    var stac = ''
+
+    function checkCheckBoxes(theForm) {
+
+        //alert($( "#app-packages option:selected" ).val());
+        //alert($( "input[name='character'] :checked" ).val());
+        //alert(document.getElementById("as").checked);
+        //document.getElementById("fountainTextG").style.display = 'none';
+        /*if (document.getElementById("as").checked == true){
+        	apacheserver=document.getElementById("as").value;
+        }
+        if (document.getElementById("at").checked == true){
+        	tomcat=document.getElementById("at").value;
+        }
+        if (document.getElementById("sql").checked == true){
+        	sql=document.getElementById("sql").value;
+        }
+        if (document.getElementById("dc").checked == true){
+        	dc=document.getElementById("dc").value;
+        }
+        if (document.getElementById("kc").checked == true){
+        	kc=document.getElementById("kc").value;
+        }
+        if (document.getElementById("ps").checked == true){
+        	ps=document.getElementById("ps").value;
+        }
+        if (document.getElementById("wp").checked == true){
+        	wp=document.getElementById("wp").value;
+        }
+        if (document.getElementById("stac").checked == true){
+        	stac=document.getElementById("stac").value;
+        }
+        var info = [];
+        info[0] = apacheserver;
+        info[1] = tomcat;
+        info[2] = sql;
+        info[3] = dc;
+        info[4] = kc;
+        info[5] = ps;
+        info[6] = wp;
+        info[7] = stac;
+        if (
+        	document.getElementById("as").checked == false &&
+        	document.getElementById("at").checked == false &&
+        	document.getElementById("sql").checked == false &&
+        	document.getElementById("dc").checked == false &&
+        	document.getElementById("kc").checked == false &&
+        	document.getElementById("ps").checked == false &&
+        	document.getElementById("wp").checked == false &&
+        	document.getElementById("stac").checked == false) {
+
+        	alert ('Please select a package to install');
+        	return false;*/
+        var ids = ""
+        $("input[name='character']:checked").each(function() {
+            //alert( $(this).val() );
+            ids += $(this).val() + ","
+        });
+
+        var fileUpload = $("#hdCustomFile").val();
+        //alert(fileUpload);
+        if (ids == "" && fileUpload == "") {
+
+            alert('Please select a package to install');
+            return false;
+
+        } else {
+            if (confirm('Do you want to submit?')) {
+
+                //alert("Selected: " + apacheserver + " , " + tomcat + " , " + sql + " , " + dc + " , " + kc + " , " + ps + " , " + wp + " , " + stac)
+
+                /*ids = ""
+                for(var i = 0; i<info.length; i++){
+                	if(info[i]!=''){
+                		ids += info[i]+","
+                	}
+                }*/
+
+            } else {
+
+                location.reload();
+                return false;
+            }
+        }
+
+        if (fileUpload == "") {
+
+            deployPackage(ids);
+
+        } else {
+            deployCustomPackage(fileUpload);
+        }
+        //http://malsup.com/jquery/block/
+
+        //$.unblockUI();
+    }
+
+    function deployPackage(ids) {
+
+        $.blockUI();
+        $.ajax({
+            url: "/app_deployment/installSoftwares/?ids=" + ids,
+            dataType: 'json',
+            success: function(json) {
+
+
+                if (json.status == "success") {
+                    //alert("VM creation in progress....")
+                    var delay = 2000; //2 seconds
+                    alert(json.msg);
+                    setTimeout(function() {
+
+                        checkDeployStatus(json.envid, json.sessid, true, false)
+                    }, delay);
+
+                    //alert(json.msg);
+                    //location.reload();
+
+
+                } else if (json.msg) {
+                    alert(json.msg);
+                    location.reload();
+                } else {
+                    alert("Error occured");
+                    location.reload();
+                }
+
+                //
+            }
+
+        });
+
+    }
+
+
+
+    function deployCustomPackage(fileUpload) {
+
+        $.blockUI();
+        $.ajax({
+            url: "/app_deployment/createCustomPackage/?files=" + fileUpload,
+            dataType: 'json',
+            success: function(json) {
+
+
+                if (json.status == "success") {
+                    //alert("VM creation in progress....")
+                    var delay = 2000; //2 seconds
+                    alert(json.msg);
+                    setTimeout(function() {
+
+                        checkDeployStatus(json.envid, json.sessid, true, false)
+                    }, delay);
+
+                    //alert(json.msg);
+                    //location.reload();
+
+
+                } else if (json.msg) {
+                    alert(json.msg);
+                    location.reload();
+                } else {
+                    alert("Error occured");
+                    location.reload();
+                }
+
+                //
+            }
+
+        });
+
+    }
+
+
+    function checkDeployStatus(envid, sessid, notify, done) {
+
+        $.ajax({
+            url: "/app_deployment/getDeployInfo?envid=" + envid + "&sessid=" + sessid,
+            dataType: 'json',
+            success: function(json) {
+
+                if (json.status == "success") {
+
+                    if (json.state == "deploying") {
+
+                        if (notify == true) {
+                            $.unblockUI();
+                            alert("Deployment in progress...")
+                            document.getElementById("fountainTextG").style.display = '';
+                        }
+
+                        var delay = 30000; //30 seconds
+
+                        setTimeout(function() {
+                            document.getElementById("fountainTextG").style.display = '';
+                            checkDeployStatus(envid, sessid, false, true);
+                        }, delay);
+
+
+                    } else {
+                        document.getElementById("fountainTextG").style.display = 'none';
+                        alert('Deployment status :: ' + json.state)
+                            //alert('Deployment status :: ready')
+                        location.reload();
+                    }
+
+                } else if (json.msg) {
+                    document.getElementById("fountainTextG").style.display = 'none';
+                    alert(json.msg);
+                    location.reload();
+                } else {
+                    document.getElementById("fountainTextG").style.display = 'none';
+                    alert("Error occurred,while fetching deployment details");
+                    location.reload();
+                }
+
+
+            }
+        });
+
+    }
+</script>
+<style>
+	.pure-menu-selected1{
+		 background: #6f6f6f none repeat scroll 0 0;
+	}
+</style>
+
+</head>
+<body>
+
+
+
+<form  >
+	<div id="layout">
+		<!-- Menu toggle -->
+		<a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
+			<span></span>
+		</a>
+
+		<!--<div id="menu">
+			<div class="pure-menu">
+				<a class="pure-menu-heading" href="/">HOME</a>				
+			</div>
+		</div>-->
+		
+		
+		
+		<div id="menu" style="width:165px";>
+                        <div class="pure-menu">
+                                <a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
+                                <ul class="pure-menu-list">
+                                        <li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
+                                        <li class="pure-menu-item ">
+                                                <a href="/Images" class="pure-menu-link">Upload Image</a></li>
+                                        <li class="pure-menu-item">
+                                                <a href="/app_deployment/" class="pure-menu-link pure-menu-selected1">Application Deployment</a></li>
+                                        <li class="pure-menu-item">
+                                                <a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+                                        <li class="pure-menu-item">
+                                                <a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+                                        <li class="pure-menu-item">
+                                                <a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
+
+
+                                        <li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
+                                        <li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+                                        <li class="pure-menu-item"><a href="/Manage"
+                                                class="pure-menu-link">Images and Containers</a></li>
+                                        <li class="pure-menu-item"><a href="/Build"
+                                                class="pure-menu-link">Build</a></li>
+                                        <li class="pure-menu-item"><a href="/Deploy"
+                                                class="pure-menu-link">Deploy</a></li>
+
+                                </ul>
+                                <div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
+                        </div>
+               </div>
+		
+		
+
+		<div id="main">
+			<div class="header">
+				<h1>Application Deployment</h1>
+				<!-- <h1>Self Service Application Deployment Portal</h1> -->
+				<!-- <h2>Using Murano</h2> -->
+			</div>
+
+			<div class="content">
+				
+				<div id="fountainTextG" style="display:none">				
+					<div id="fountainTextG_1" class="fountainTextG">D</div>
+					<div id="fountainTextG_2" class="fountainTextG">e</div>
+					<div id="fountainTextG_3" class="fountainTextG">p</div>
+					<div id="fountainTextG_4" class="fountainTextG">l</div>
+					<div id="fountainTextG_5" class="fountainTextG">o</div>
+					<div id="fountainTextG_6" class="fountainTextG">y</div>
+					<div id="fountainTextG_7" class="fountainTextG">i</div>
+					<div id="fountainTextG_8" class="fountainTextG">n</div>
+					<div id="fountainTextG_9" class="fountainTextG">g</div>
+				</div>
+				
+				<!-- 
+				<script>
+				var data = {{ packages|safe }};
+				var obj = $.parseJSON( {{ packages|safe }} );
+				alert( packages);
+				
+				</script>
+				
+				{% for pkg in packages %} 
+					
+					<div style="clear:both"> {{packages}} </div>
+						
+				{% endfor%}
+				-->
+				
+				<!-- 
+				<select id="demo" name="htmltest" multiple="multiple">
+				  <optgroup label="Group 1" title="Opiton Group 1">
+					  <option value="1" title="Subgroup 1">Subgroup 1</option>
+					  <option value="2" title="Subgroup 2">Subgroup 2</option>
+					  <option value="3" title="Subgroup 3">Subgroup 3</option>
+					  <option value="4" title="Subgroup 4">Subgroup 4</option>
+					  <option value="5" title="Subgroup 5">Subgroup 5</option>
+					  <option value="6" title="Subgroup 6">Subgroup 6</option>
+					  <option value="7" title="Subgroup 7">Subgroup 7</option>
+					  <option value="8" title="Subgroup 8">Subgroup 8</option>
+					  <option value="9" title="Subgroup 9">Subgroup 9</option>
+					  <option value="10" title="Subgroup 10">Subgroup 10</option>
+				  </optgroup>
+				  <optgroup label="Group 2" title="Opiton Group 2">
+					  <option value="1" title="Subgroup 1">Subgroup 1</option>
+					  <option value="2" title="Subgroup 2">Subgroup 2</option>
+					  <option value="3" title="Subgroup 3">Subgroup 3</option>
+					  <option value="4" title="Subgroup 4">Subgroup 4</option>
+					  <option value="5" title="Subgroup 5">Subgroup 5</option>
+					  <option value="6" title="Subgroup 6">Subgroup 6</option>
+					  <option value="7" title="Subgroup 7">Subgroup 7</option>
+					  <option value="8" title="Subgroup 8">Subgroup 8</option>
+					  <option value="9" title="Subgroup 9">Subgroup 9</option>
+					  <option value="10" title="Subgroup 10">Subgroup 10</option>
+				  </optgroup>
+				  <optgroup label="Group 3" title="Opiton Group 3">
+					  <option value="1" title="Subgroup 1">Subgroup 1</option>
+					  <option value="2" title="Subgroup 2">Subgroup 2</option>
+					  <option value="3" title="Subgroup 3">Subgroup 3</option>
+					  <option value="4" title="Subgroup 4" selected="selected">Subgroup 4</option>
+					  <option value="5" title="Subgroup 5">Subgroup 5</option>
+					  <option value="6" title="Subgroup 6">Subgroup 6</option>
+					  <option value="7" title="Subgroup 7" selected="selected">Subgroup 7</option>
+					  <option value="8" title="Subgroup 8">Subgroup 8</option>
+					  <option value="9" title="Subgroup 9">Subgroup 9</option>
+					  <option value="10" title="Subgroup 10">Subgroup 10</option>
+				  </optgroup>
+				</select>
+				
+				<script> $('#demo').searchableOptionList();</script>
+				-->
+				
+				<div style="clear:both;height:5px"></div>
+				<h2 class="content-subhead">Application Packages</h2>
+				<div style="clear:both;height:5px"></div>
+				<!-- <p>Application Packages to be installed are listed below</p>-->
+				
+				<!-- Ref : http://www.jqueryscript.net/form/jQuery-Plugin-For-Seachable-Option-List-with-Checkboxes.html -->
+				<select id="app-packages" name="character" multiple="multiple" style="width:450px" ></select>
+
+				<script type="text/javascript">
+					$(function() {
+						$('#app-packages').searchableOptionList({
+							data: '/app_deployment/getPackages/',
+							maxHeight: '250px',
+							showSelectAll: true,
+							
+							 texts: {
+								noItemsAvailable: 'No packages found',
+								selectAll: '',
+								selectNone: 'Select None',
+								quickDelete: '&times;',
+								searchplaceholder: 'Click here to search available packages'
+								}
+							 });
+					});
+				</script>
+				
+				<div style="clear:both;height:25px"></div>
+				<div style="clear:both;height:25px">	-OR-</div>
+				<div style="clear:both;height:25px;font-weight:bold;color:black"> Create custom package	</div>
+				<div style="clear:both;height:5px"></div>
+				<!--<div style="float:left;"> Choose Application YAML file <input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple> </div>
+				<div style="clear:both;height:2px"></div>
+				<div style="float:left;">Choose Application Logo<input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple></div>
+				
+				-->
+				
+				<!-- Ref : https://github.com/danielm/uploader/  --> 
+				<div class="left-column" style="height:10px">
+					<!-- D&D Markup -->
+					<div id="drag-and-drop-zone" class="uploader" style ="border:0px;padding:0">
+					  <!--<div>Drag &amp; Drop Images Here</div>
+					  <div class="or">-or-</div>-->
+					  <div class="browser" style="float:left">
+						<label>
+						  <span>Upload Application template file</span>
+						  <input type="file" name="files[]" multiple="multiple" title='Click to add Files'>
+						</label>
+					  </div>
+					</div>
+					<!-- /D&D Markup -->
+				  </div>
+				  
+				  <div id="fileList" style="height:90px">
+					
+					<!-- Files will be places here -->
+
+				  </div>
+				  <input type="hidden"  id="hdCustomFile" name="hdCustomFile"  />
+				  <!-- 
+				  <div id="debug">
+					<h2>Debug</h2>
+					<div>
+					  <ul>
+						 Debug lines will be added here 
+					  </ul>
+					</div>
+				  </div>
+					-->						
+				 
+			
+			<div style="clear:both;height:5px"></div>	 
+			<script type="text/javascript">
+      
+			  //-- Some functions to work with our UI
+			  function add_log(message)
+			  {
+				var template = '<li>[' + new Date().getTime() + '] - ' + message + '</li>';
+				
+				$('#debug').find('ul').prepend(template);
+			  }
+			  
+			  function add_file(id, file)
+			  {
+				var template = '' +
+				  '<div class="file" id="uploadFile' + id + '">' +
+					'<div class="info">' +
+					  '#1 - <span class="filename" title="Size: ' + file.size + 'bytes - Mimetype: ' + file.type + '">' + file.name + '</span><br /><small>Status: <span class="status">Waiting</span></small>' +
+					'</div>' +
+					'<div class="bar">' +
+					  '<div class="progress" style="width:0%"></div>' +
+					'</div>' +
+				  '</div>';
+				  
+				   $('#fileList').prepend(template);
+			  }
+			  
+			  function update_file_status(id, status, message)
+			  {
+				$('#uploadFile' + id).find('span.status').html(message).addClass(status);
+			  }
+			  
+			  function update_file_progress(id, percent)
+			  {
+				$('#uploadFile' + id).find('div.progress').width(percent);
+			  }
+			  
+			  // Upload Plugin itself
+			  $('#drag-and-drop-zone').dmUploader({
+				url: '/app_deployment/uploadFiles/',
+				dataType: 'json',
+				allowedTypes: '*',
+				extFilter: 'yaml',
+				onInit: function(){
+				  //add_log('Penguin initialized :)');
+				},
+				onBeforeUpload: function(id){
+				  add_log('Starting the upload of #' + id);
+				  
+				  update_file_status(id, 'uploading', 'Uploading...');
+				},
+				onNewFile: function(id, file){
+				  add_log('New file added to queue #' + id);
+				  
+				  add_file(id, file);
+				},
+				onComplete: function(){
+				  add_log('All pending tranfers finished');
+				},
+				onUploadProgress: function(id, percent){
+				  var percentStr = percent + '%';
+
+				  update_file_progress(id, percentStr);
+				},
+				onUploadSuccess: function(id, data){
+				  add_log('Upload of file #' + id + ' completed');
+				  
+				  add_log('Server Response for file #' + id + ': ' + JSON.stringify(data));
+				  obj = JSON.parse(JSON.stringify(data));
+				  //alert(obj.filepath)
+				  /*if( $('#hdCustomFile').val() !="")
+					$('#hdCustomFile').val( $('#hdCustomFile').val()+","+obj.filepath)
+				  else		*/		  
+					$('#hdCustomFile').val(obj.filepath)
+				  
+				  
+				  update_file_status(id, 'success', 'Upload Complete');
+				  
+				  update_file_progress(id, '100%');
+				},
+				onUploadError: function(id, message){
+				  add_log('Failed to Upload file #' + id + ': ' + message);
+				  
+				  update_file_status(id, 'error', message);
+				},
+				onFileTypeError: function(file){
+				  add_log('File \'' + file.name + '\' cannot be added: must be an image');
+				  
+				},
+				onFileSizeError: function(file){
+				  add_log('File \'' + file.name + '\' cannot be added: size excess limit');
+				},
+				/*onFileExtError: function(file){
+				  $.danidemo.addLog('#demo-debug', 'error', 'File \'' + file.name + '\' has a Not Allowed Extension');
+				},*/
+				onFallbackMode: function(message){
+				  alert('Browser not supported(do something else here!): ' + message);
+				}
+			  });
+			  
+			  
+			  
+		</script>
+
+				
+				<!--<select id="images" name="images"  style="width:450px"></select>-->
+				
+				
+				
+<!-- 
+				<table id="imageTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word; width: 750px;">
+					<thead>
+					
+					
+					
+						<td>
+            <input type="checkbox" id="as" name="ApacheServer" value="apachehttpserver"> Apache Server
+        </td>
+<td>
+            <input type="checkbox" id="at" name="ApacheTomcat" value="apachetomcat"> Apache Tomcat
+        </td>
+</tr>
+<tr>
+  <td>
+  <input type="checkbox" id="sql" name="MySql" value="mysql" > MySql
+</td>
+<td>
+            <input type="checkbox" id="dc" name="DockerContainer" value="dockerapp"> Docker 
+        </td>
+</tr>
+<tr>
+<td>
+            <input type="checkbox" id="kc" name="KubernetesCluster" value="kubernetescluster"> Kubernetes Cluster
+        </td>
+<td>
+            <input type="checkbox" id="ps" name="PostgreSql" value="postgresql"> PostgreSql
+        </td>
+</tr>
+<tr>
+<td>
+            <input type="checkbox" id="wp" name="WordPress" value="wordpess"> WordPress
+        </td>
+<td>
+            <input type="checkbox" id="stac" name="Stackato" value="stackatonode"> Stackato
+        </td>
+</tr>
+					</thead>
+
+					<tbody>
+					
+						<tr>
+						
+							<td>
+							Select Image
+							</td>
+							<td>
+							<select> </select>
+							</td>
+						
+						<tr>
+						
+						<tr>
+						
+							<td>
+							Key Pair 
+							</td>
+							<td>
+							<select> </select>
+							</td>
+						
+						<tr>
+
+					</tbody>
+				</table> -->
+<br>
+<div class="form-group">
+<input type="button" class="btn btn-success" value="Deploy" align="center" onclick="checkCheckBoxes(this);"/>
+</div>
+</div>
+</div>
+</div>
+<script src="{% static 'js/ui.js' %}"></script>
+</form>
+</body>
+</html>
