@@ -2,41 +2,41 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Automating Workload Deployment">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Automating Workload Deployment">
 
-<title>iManage</title>
+    <title>iManage</title>
 
     <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-	<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
-	<script src="http://malsup.github.io/jquery.blockUI.js"></script>
-	<script src="{% static 'js/searchableOptionList.js' %}"></script>
-	
-	<script src="{% static 'js/dmuploader.js' %}"></script>
-	
+    <script src="https://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+    <script src="http://malsup.github.io/jquery.blockUI.js"></script>
+    <script src="{% static 'js/searchableOptionList.js' %}"></script>
 
-	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
-	<link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+    <script src="{% static 'js/dmuploader.js' %}"></script>
+
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 
     <!--[if lte IE 8]>
-        <link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
-		 <link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layouts/side-menu-old-ie.css' %}">
+    <link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
     <![endif]-->
     <!--[if gt IE 8]><!-->
-        <link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
-		<link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layouts/side-menu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/searchableOptionList.css' %}">
     <!--<![endif]-->
-	
-	
-	<link rel="stylesheet" href="{% static 'css/simple-demo.css' %}">
-	
-	
-<style>	
+
+
+    <link rel="stylesheet" href="{% static 'css/simple-demo.css' %}">
+
+
+    <style>
 #fountainTextG{
 	width:234px;
 	margin:auto;
@@ -187,10 +187,48 @@
 		color:rgb(255,255,255);
 	}
 }
-</style>	
-	
-<script type="text/javascript">
-    //$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+
+    </style>
+
+    <script type="text/javascript">
+    $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+
+    $(document).ready(function(){
+        $("#operationSelect").change(function(){
+            val = $("#operationSelect").val();
+            if(val == "snapshot"){
+                $("#fromSnapshotDiv").show();
+                $("#applicationPackagesDiv").hide();
+                $("#createPackageDiv").hide();
+            }else if(val == "murano"){
+                $("#applicationPackagesDiv").show();
+                $("#createPackageDiv").hide();
+                $("#fromSnapshotDiv").hide();
+            }else if(val == "createmurano"){
+                $("#applicationPackagesDiv").hide();
+                $("#createPackageDiv").show();
+                $("#fromSnapshotDiv").hide();
+            }else{
+                $("#applicationPackagesDiv").hide();
+                $("#createPackageDiv").show();
+                $("#fromSnapshotDiv").hide();
+            }
+        });
+
+        $.ajax({
+            type: "GET",
+              url:"/ListGlanceImages/",
+              dataType: 'json',
+              success: function(json){
+                images = json.images;
+                for(i=0;i<images.length;i++){
+                    image=images[i];
+                    $("#imageSelect").append("<option value='"+image.id+"'>"+image.name+"</option>");
+                }
+              }
+        });
+
+    });
 
     var apacheserver = ''
     var tomcat = ''
@@ -252,48 +290,63 @@
 
         	alert ('Please select a package to install');
         	return false;*/
-        var ids = ""
-        $("input[name='character']:checked").each(function() {
-            //alert( $(this).val() );
-            ids += $(this).val() + ","
-        });
 
-        var fileUpload = $("#hdCustomFile").val();
-        //alert(fileUpload);
-        if (ids == "" && fileUpload == "") {
+        var selection = $("#operationSelect").val();
+        var ids = "";
 
-            alert('Please select a package to install');
-            return false;
+        if(selection == "snapshot"){
+            image_id=$("#imageSelect").val();
+            alert(image_id);
+            $.ajax({
+                type: "GET",
+                  url:"/app_deployment/createInstance/?image_id="+image_id,
+                  dataType: 'json',
+                  success: function(json){
+                    alert(json.server_id);
+                  }
+            });
+        }else{
+            $("input[name='character']:checked").each(function() {
+                //alert( $(this).val() );
+                ids += $(this).val() + ","
+            });
 
-        } else {
-            if (confirm('Do you want to submit?')) {
+            var fileUpload = $("#hdCustomFile").val();
+            //alert(fileUpload);
+            if (ids == "" && fileUpload == "") {
 
-                //alert("Selected: " + apacheserver + " , " + tomcat + " , " + sql + " , " + dc + " , " + kc + " , " + ps + " , " + wp + " , " + stac)
-
-                /*ids = ""
-                for(var i = 0; i<info.length; i++){
-                	if(info[i]!=''){
-                		ids += info[i]+","
-                	}
-                }*/
+                alert('Please select a package to install');
+                return false;
 
             } else {
+                if (confirm('Do you want to submit?')) {
 
-                location.reload();
-                return false;
+                    //alert("Selected: " + apacheserver + " , " + tomcat + " , " + sql + " , " + dc + " , " + kc + " , " + ps + " , " + wp + " , " + stac)
+
+                    /*ids = ""
+                    for(var i = 0; i<info.length; i++){
+                        if(info[i]!=''){
+                            ids += info[i]+","
+                        }
+                    }*/
+
+                } else {
+                    return false;
+                }
             }
+
+            if (fileUpload == "") {
+
+                deployPackage(ids);
+
+            } else {
+                deployCustomPackage(fileUpload);
+            }
+            //http://malsup.com/jquery/block/
+
+            //$.unblockUI();
         }
 
-        if (fileUpload == "") {
-
-            deployPackage(ids);
-
-        } else {
-            deployCustomPackage(fileUpload);
-        }
-        //http://malsup.com/jquery/block/
-
-        //$.unblockUI();
     }
 
     function deployPackage(ids) {
@@ -420,217 +473,240 @@
         });
 
     }
-</script>
-<style>
+
+    </script>
+    <style>
 	.pure-menu-selected1{
 		 background: #6f6f6f none repeat scroll 0 0;
 	}
-</style>
+
+    </style>
 
 </head>
 <body>
 
 
+<form>
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
+            <span></span>
+        </a>
 
-<form  >
-	<div id="layout">
-		<!-- Menu toggle -->
-		<a href="#menu" id="menuLink" class="menu-link"> <!-- Hamburger icon -->
-			<span></span>
-		</a>
-
-		<!--<div id="menu">
-			<div class="pure-menu">
-				<a class="pure-menu-heading" href="/">HOME</a>				
-			</div>
-		</div>-->
-		
-		
-		
-		<div id="menu" style="width:165px";>
-                        <div class="pure-menu">
-                                <a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
-                                <ul class="pure-menu-list">
-                                        <li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack</li>
-                                        <li class="pure-menu-item ">
-                                                <a href="/Images" class="pure-menu-link">Upload Image</a></li>
-                                        <li class="pure-menu-item">
-                                                <a href="/app_deployment/" class="pure-menu-link pure-menu-selected1">Application Deployment</a></li>
-                                        <li class="pure-menu-item">
-                                                <a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
-                                        <li class="pure-menu-item">
-                                                <a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
-                                        <li class="pure-menu-item">
-                                                <a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
+        <!--<div id="menu">
+            <div class="pure-menu">
+                <a class="pure-menu-heading" href="/">HOME</a>
+            </div>
+        </div>-->
 
 
-                                        <li class="pure-menu-heading" style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker</li>
-                                        <li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
-                                        <li class="pure-menu-item"><a href="/Manage"
-                                                class="pure-menu-link">Images and Containers</a></li>
-                                        <li class="pure-menu-item"><a href="/Build"
-                                                class="pure-menu-link">Build</a></li>
-                                        <li class="pure-menu-item"><a href="/Deploy"
-                                                class="pure-menu-link">Deploy</a></li>
+        <div id="menu" style="width:165px" ;>
+            <div class="pure-menu">
+                <a class="pure-menu-heading" href="/" style="text-transform: none;">iManage</a>
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-heading"
+                        style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Openstack
+                    </li>
+                    <li class="pure-menu-item ">
+                        <a href="/Images" class="pure-menu-link">Upload Image</a></li>
+                    <li class="pure-menu-item">
+                        <a href="/app_deployment/" class="pure-menu-link pure-menu-selected1">Application Deployment</a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a href="/Migrate" class="pure-menu-link">Live Migration</a></li>
+                    <li class="pure-menu-item">
+                        <a href="/VNFCatalog" class="pure-menu-link">VNF Catalog</a></li>
+                    <li class="pure-menu-item">
+                        <a href="/VNFManager" class="pure-menu-link">VNF Manager</a></li>
 
-                                </ul>
-                                <div style="bottom: 0px; position: fixed;"> <span class="glyphicon glyphicon-copyright-mark" style=""></span> Cogizant</div>
+
+                    <li class="pure-menu-heading"
+                        style="background: transparent none repeat scroll 0% 0%; padding: 0px;">Docker
+                    </li>
+                    <li class="pure-menu-item"><a href="/Nodes" class="pure-menu-link">Node Management</a></li>
+                    <li class="pure-menu-item"><a href="/Manage"
+                                                  class="pure-menu-link">Images and Containers</a></li>
+                    <li class="pure-menu-item"><a href="/Build"
+                                                  class="pure-menu-link">Build</a></li>
+                    <li class="pure-menu-item"><a href="/Deploy"
+                                                  class="pure-menu-link">Deploy</a></li>
+
+                </ul>
+                <div style="bottom: 0px; position: fixed;"><span class="glyphicon glyphicon-copyright-mark"
+                                                                 style=""></span> Cogizant
+                </div>
+            </div>
+        </div>
+
+
+        <div id="main">
+            <div class="header">
+                <h1>Application Deployment</h1>
+                <!-- <h1>Self Service Application Deployment Portal</h1> -->
+                <!-- <h2>Using Murano</h2> -->
+            </div>
+
+            <div class="content">
+
+                <div id="fountainTextG" style="display:none">
+                    <div id="fountainTextG_1" class="fountainTextG">D</div>
+                    <div id="fountainTextG_2" class="fountainTextG">e</div>
+                    <div id="fountainTextG_3" class="fountainTextG">p</div>
+                    <div id="fountainTextG_4" class="fountainTextG">l</div>
+                    <div id="fountainTextG_5" class="fountainTextG">o</div>
+                    <div id="fountainTextG_6" class="fountainTextG">y</div>
+                    <div id="fountainTextG_7" class="fountainTextG">i</div>
+                    <div id="fountainTextG_8" class="fountainTextG">n</div>
+                    <div id="fountainTextG_9" class="fountainTextG">g</div>
+                </div>
+
+                <!--
+                <script>
+                var data = {{ packages|safe }};
+                var obj = $.parseJSON( {{ packages|safe }} );
+                alert( packages);
+
+                </script>
+
+                {% for pkg in packages %}
+
+                    <div style="clear:both"> {{packages}} </div>
+
+                {% endfor%}
+                -->
+
+                <!--
+                <select id="demo" name="htmltest" multiple="multiple">
+                  <optgroup label="Group 1" title="Opiton Group 1">
+                      <option value="1" title="Subgroup 1">Subgroup 1</option>
+                      <option value="2" title="Subgroup 2">Subgroup 2</option>
+                      <option value="3" title="Subgroup 3">Subgroup 3</option>
+                      <option value="4" title="Subgroup 4">Subgroup 4</option>
+                      <option value="5" title="Subgroup 5">Subgroup 5</option>
+                      <option value="6" title="Subgroup 6">Subgroup 6</option>
+                      <option value="7" title="Subgroup 7">Subgroup 7</option>
+                      <option value="8" title="Subgroup 8">Subgroup 8</option>
+                      <option value="9" title="Subgroup 9">Subgroup 9</option>
+                      <option value="10" title="Subgroup 10">Subgroup 10</option>
+                  </optgroup>
+                  <optgroup label="Group 2" title="Opiton Group 2">
+                      <option value="1" title="Subgroup 1">Subgroup 1</option>
+                      <option value="2" title="Subgroup 2">Subgroup 2</option>
+                      <option value="3" title="Subgroup 3">Subgroup 3</option>
+                      <option value="4" title="Subgroup 4">Subgroup 4</option>
+                      <option value="5" title="Subgroup 5">Subgroup 5</option>
+                      <option value="6" title="Subgroup 6">Subgroup 6</option>
+                      <option value="7" title="Subgroup 7">Subgroup 7</option>
+                      <option value="8" title="Subgroup 8">Subgroup 8</option>
+                      <option value="9" title="Subgroup 9">Subgroup 9</option>
+                      <option value="10" title="Subgroup 10">Subgroup 10</option>
+                  </optgroup>
+                  <optgroup label="Group 3" title="Opiton Group 3">
+                      <option value="1" title="Subgroup 1">Subgroup 1</option>
+                      <option value="2" title="Subgroup 2">Subgroup 2</option>
+                      <option value="3" title="Subgroup 3">Subgroup 3</option>
+                      <option value="4" title="Subgroup 4" selected="selected">Subgroup 4</option>
+                      <option value="5" title="Subgroup 5">Subgroup 5</option>
+                      <option value="6" title="Subgroup 6">Subgroup 6</option>
+                      <option value="7" title="Subgroup 7" selected="selected">Subgroup 7</option>
+                      <option value="8" title="Subgroup 8">Subgroup 8</option>
+                      <option value="9" title="Subgroup 9">Subgroup 9</option>
+                      <option value="10" title="Subgroup 10">Subgroup 10</option>
+                  </optgroup>
+                </select>
+
+                <script> $('#demo').searchableOptionList();</script>
+                -->
+
+                <div style="clear:both;height:5px"></div>
+                <h2>Select An Option To Create Docker Machine</h2>
+                <select id="operationSelect" class="form-control" style="width:450px;">
+                    <option value="snapshot">Create from Snapshot/Image</option>
+                    <option value="murano">Create using already available Murano packages</option>
+                    <option value="createmurano">Create using a custom Murano package</option>
+                    <option value="createheat">Create using Heat template</option>
+                </select>
+
+                <div id="fromSnapshotDiv">
+                    <h2>Select the snapshot/image</h2>
+                    <select id="imageSelect" class="form-control" style="width:450px;">
+
+                    </select>
+                </div>
+
+                <div id="applicationPackagesDiv" style="display:none;">
+                    <h2 class="content-subhead">Application Packages</h2>
+                    <div style="clear:both;height:5px"></div>
+                    <!-- <p>Application Packages to be installed are listed below</p>-->
+
+                    <!-- Ref : http://www.jqueryscript.net/form/jQuery-Plugin-For-Seachable-Option-List-with-Checkboxes.html -->
+                    <select id="app-packages" name="character" multiple="multiple" style="width:450px"></select>
+
+                    <script type="text/javascript">
+                        $(function() {
+                            $('#app-packages').searchableOptionList({
+                                data: '/app_deployment/getPackages/',
+                                maxHeight: '250px',
+                                showSelectAll: true,
+
+                                 texts: {
+                                    noItemsAvailable: 'No packages found',
+                                    selectAll: '',
+                                    selectNone: 'Select None',
+                                    quickDelete: '&times;',
+                                    searchplaceholder: 'Click here to search available packages'
+                                    }
+                                 });
+                        });
+
+                    </script>
+                </div>
+                <div style="clear:both;height:25px"></div>
+                <div id="createPackageDiv" style="display:none;">
+                    <h2 id="createPackage" style="clear:both;"> Create custom package</h2>
+                    <div style="clear:both;height:5px"></div>
+                    <!--<div style="float:left;"> Choose Application YAML file <input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple> </div>
+                    <div style="clear:both;height:2px"></div>
+                    <div style="float:left;">Choose Application Logo<input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple></div>
+
+                    -->
+
+                    <!-- Ref : https://github.com/danielm/uploader/  -->
+                    <div class="left-column" style="height:10px">
+                        <!-- D&D Markup -->
+                        <div id="drag-and-drop-zone" class="uploader" style="border:0px;padding:0">
+                            <!--<div>Drag &amp; Drop Images Here</div>
+                            <div class="or">-or-</div>-->
+                            <div class="browser" style="float:left">
+                                <label>
+                                    <span>Upload Application template file</span>
+                                    <input type="file" name="files[]" multiple="multiple" title='Click to add Files'>
+                                </label>
+                            </div>
                         </div>
-               </div>
-		
-		
+                        <!-- /D&D Markup -->
+                    </div>
 
-		<div id="main">
-			<div class="header">
-				<h1>Application Deployment</h1>
-				<!-- <h1>Self Service Application Deployment Portal</h1> -->
-				<!-- <h2>Using Murano</h2> -->
-			</div>
+                    <div id="fileList" style="height:90px">
 
-			<div class="content">
-				
-				<div id="fountainTextG" style="display:none">				
-					<div id="fountainTextG_1" class="fountainTextG">D</div>
-					<div id="fountainTextG_2" class="fountainTextG">e</div>
-					<div id="fountainTextG_3" class="fountainTextG">p</div>
-					<div id="fountainTextG_4" class="fountainTextG">l</div>
-					<div id="fountainTextG_5" class="fountainTextG">o</div>
-					<div id="fountainTextG_6" class="fountainTextG">y</div>
-					<div id="fountainTextG_7" class="fountainTextG">i</div>
-					<div id="fountainTextG_8" class="fountainTextG">n</div>
-					<div id="fountainTextG_9" class="fountainTextG">g</div>
-				</div>
-				
-				<!-- 
-				<script>
-				var data = {{ packages|safe }};
-				var obj = $.parseJSON( {{ packages|safe }} );
-				alert( packages);
-				
-				</script>
-				
-				{% for pkg in packages %} 
-					
-					<div style="clear:both"> {{packages}} </div>
-						
-				{% endfor%}
-				-->
-				
-				<!-- 
-				<select id="demo" name="htmltest" multiple="multiple">
-				  <optgroup label="Group 1" title="Opiton Group 1">
-					  <option value="1" title="Subgroup 1">Subgroup 1</option>
-					  <option value="2" title="Subgroup 2">Subgroup 2</option>
-					  <option value="3" title="Subgroup 3">Subgroup 3</option>
-					  <option value="4" title="Subgroup 4">Subgroup 4</option>
-					  <option value="5" title="Subgroup 5">Subgroup 5</option>
-					  <option value="6" title="Subgroup 6">Subgroup 6</option>
-					  <option value="7" title="Subgroup 7">Subgroup 7</option>
-					  <option value="8" title="Subgroup 8">Subgroup 8</option>
-					  <option value="9" title="Subgroup 9">Subgroup 9</option>
-					  <option value="10" title="Subgroup 10">Subgroup 10</option>
-				  </optgroup>
-				  <optgroup label="Group 2" title="Opiton Group 2">
-					  <option value="1" title="Subgroup 1">Subgroup 1</option>
-					  <option value="2" title="Subgroup 2">Subgroup 2</option>
-					  <option value="3" title="Subgroup 3">Subgroup 3</option>
-					  <option value="4" title="Subgroup 4">Subgroup 4</option>
-					  <option value="5" title="Subgroup 5">Subgroup 5</option>
-					  <option value="6" title="Subgroup 6">Subgroup 6</option>
-					  <option value="7" title="Subgroup 7">Subgroup 7</option>
-					  <option value="8" title="Subgroup 8">Subgroup 8</option>
-					  <option value="9" title="Subgroup 9">Subgroup 9</option>
-					  <option value="10" title="Subgroup 10">Subgroup 10</option>
-				  </optgroup>
-				  <optgroup label="Group 3" title="Opiton Group 3">
-					  <option value="1" title="Subgroup 1">Subgroup 1</option>
-					  <option value="2" title="Subgroup 2">Subgroup 2</option>
-					  <option value="3" title="Subgroup 3">Subgroup 3</option>
-					  <option value="4" title="Subgroup 4" selected="selected">Subgroup 4</option>
-					  <option value="5" title="Subgroup 5">Subgroup 5</option>
-					  <option value="6" title="Subgroup 6">Subgroup 6</option>
-					  <option value="7" title="Subgroup 7" selected="selected">Subgroup 7</option>
-					  <option value="8" title="Subgroup 8">Subgroup 8</option>
-					  <option value="9" title="Subgroup 9">Subgroup 9</option>
-					  <option value="10" title="Subgroup 10">Subgroup 10</option>
-				  </optgroup>
-				</select>
-				
-				<script> $('#demo').searchableOptionList();</script>
-				-->
-				
-				<div style="clear:both;height:5px"></div>
-				<h2 class="content-subhead">Application Packages</h2>
-				<div style="clear:both;height:5px"></div>
-				<!-- <p>Application Packages to be installed are listed below</p>-->
-				
-				<!-- Ref : http://www.jqueryscript.net/form/jQuery-Plugin-For-Seachable-Option-List-with-Checkboxes.html -->
-				<select id="app-packages" name="character" multiple="multiple" style="width:450px" ></select>
+                        <!-- Files will be places here -->
 
-				<script type="text/javascript">
-					$(function() {
-						$('#app-packages').searchableOptionList({
-							data: '/app_deployment/getPackages/',
-							maxHeight: '250px',
-							showSelectAll: true,
-							
-							 texts: {
-								noItemsAvailable: 'No packages found',
-								selectAll: '',
-								selectNone: 'Select None',
-								quickDelete: '&times;',
-								searchplaceholder: 'Click here to search available packages'
-								}
-							 });
-					});
-				</script>
-				
-				<div style="clear:both;height:25px"></div>
-				<div style="clear:both;height:25px">	-OR-</div>
-				<div style="clear:both;height:25px;font-weight:bold;color:black"> Create custom package	</div>
-				<div style="clear:both;height:5px"></div>
-				<!--<div style="float:left;"> Choose Application YAML file <input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple> </div>
-				<div style="clear:both;height:2px"></div>
-				<div style="float:left;">Choose Application Logo<input type="file" id="fileupload" name="files[]" data-url="server/php/" multiple></div>
-				
-				-->
-				
-				<!-- Ref : https://github.com/danielm/uploader/  --> 
-				<div class="left-column" style="height:10px">
-					<!-- D&D Markup -->
-					<div id="drag-and-drop-zone" class="uploader" style ="border:0px;padding:0">
-					  <!--<div>Drag &amp; Drop Images Here</div>
-					  <div class="or">-or-</div>-->
-					  <div class="browser" style="float:left">
-						<label>
-						  <span>Upload Application template file</span>
-						  <input type="file" name="files[]" multiple="multiple" title='Click to add Files'>
-						</label>
-					  </div>
-					</div>
-					<!-- /D&D Markup -->
-				  </div>
-				  
-				  <div id="fileList" style="height:90px">
-					
-					<!-- Files will be places here -->
+                    </div>
+                    <input type="hidden" id="hdCustomFile" name="hdCustomFile"/>
+                    <!--
+                    <div id="debug">
+                      <h2>Debug</h2>
+                      <div>
+                        <ul>
+                           Debug lines will be added here
+                        </ul>
+                      </div>
+                    </div>
+                      -->
+                </div>
 
-				  </div>
-				  <input type="hidden"  id="hdCustomFile" name="hdCustomFile"  />
-				  <!-- 
-				  <div id="debug">
-					<h2>Debug</h2>
-					<div>
-					  <ul>
-						 Debug lines will be added here 
-					  </ul>
-					</div>
-				  </div>
-					-->						
-				 
-			
-			<div style="clear:both;height:5px"></div>	 
-			<script type="text/javascript">
+                <div style="clear:both;height:5px"></div>
+                <script type="text/javascript">
       
 			  //-- Some functions to work with our UI
 			  function add_log(message)
@@ -730,86 +806,87 @@
 			  
 			  
 			  
-		</script>
 
-				
-				<!--<select id="images" name="images"  style="width:450px"></select>-->
-				
-				
-				
-<!-- 
-				<table id="imageTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word; width: 750px;">
-					<thead>
-					
-					
-					
-						<td>
-            <input type="checkbox" id="as" name="ApacheServer" value="apachehttpserver"> Apache Server
-        </td>
-<td>
-            <input type="checkbox" id="at" name="ApacheTomcat" value="apachetomcat"> Apache Tomcat
-        </td>
-</tr>
-<tr>
-  <td>
-  <input type="checkbox" id="sql" name="MySql" value="mysql" > MySql
-</td>
-<td>
-            <input type="checkbox" id="dc" name="DockerContainer" value="dockerapp"> Docker 
-        </td>
-</tr>
-<tr>
-<td>
-            <input type="checkbox" id="kc" name="KubernetesCluster" value="kubernetescluster"> Kubernetes Cluster
-        </td>
-<td>
-            <input type="checkbox" id="ps" name="PostgreSql" value="postgresql"> PostgreSql
-        </td>
-</tr>
-<tr>
-<td>
-            <input type="checkbox" id="wp" name="WordPress" value="wordpess"> WordPress
-        </td>
-<td>
-            <input type="checkbox" id="stac" name="Stackato" value="stackatonode"> Stackato
-        </td>
-</tr>
-					</thead>
+                </script>
 
-					<tbody>
-					
-						<tr>
-						
-							<td>
-							Select Image
-							</td>
-							<td>
-							<select> </select>
-							</td>
-						
-						<tr>
-						
-						<tr>
-						
-							<td>
-							Key Pair 
-							</td>
-							<td>
-							<select> </select>
-							</td>
-						
-						<tr>
 
-					</tbody>
-				</table> -->
-<br>
-<div class="form-group">
-<input type="button" class="btn btn-success" value="Deploy" align="center" onclick="checkCheckBoxes(this);"/>
-</div>
-</div>
-</div>
-</div>
-<script src="{% static 'js/ui.js' %}"></script>
+                <!--<select id="images" name="images"  style="width:450px"></select>-->
+
+
+                <!--
+                                <table id="imageTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word; width: 750px;">
+                                    <thead>
+
+
+
+                                        <td>
+                            <input type="checkbox" id="as" name="ApacheServer" value="apachehttpserver"> Apache Server
+                        </td>
+                <td>
+                            <input type="checkbox" id="at" name="ApacheTomcat" value="apachetomcat"> Apache Tomcat
+                        </td>
+                </tr>
+                <tr>
+                  <td>
+                  <input type="checkbox" id="sql" name="MySql" value="mysql" > MySql
+                </td>
+                <td>
+                            <input type="checkbox" id="dc" name="DockerContainer" value="dockerapp"> Docker
+                        </td>
+                </tr>
+                <tr>
+                <td>
+                            <input type="checkbox" id="kc" name="KubernetesCluster" value="kubernetescluster"> Kubernetes Cluster
+                        </td>
+                <td>
+                            <input type="checkbox" id="ps" name="PostgreSql" value="postgresql"> PostgreSql
+                        </td>
+                </tr>
+                <tr>
+                <td>
+                            <input type="checkbox" id="wp" name="WordPress" value="wordpess"> WordPress
+                        </td>
+                <td>
+                            <input type="checkbox" id="stac" name="Stackato" value="stackatonode"> Stackato
+                        </td>
+                </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        <tr>
+
+                                            <td>
+                                            Select Image
+                                            </td>
+                                            <td>
+                                            <select> </select>
+                                            </td>
+
+                                        <tr>
+
+                                        <tr>
+
+                                            <td>
+                                            Key Pair
+                                            </td>
+                                            <td>
+                                            <select> </select>
+                                            </td>
+
+                                        <tr>
+
+                                    </tbody>
+                                </table> -->
+                <br>
+                <div class="form-group">
+                    <input type="button" class="btn btn-success" value="Deploy" align="center"
+                           onclick="checkCheckBoxes(this);"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/ui.js' %}"></script>
 </form>
 </body>
 </html>

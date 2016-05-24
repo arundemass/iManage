@@ -9,7 +9,10 @@ from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from murano_connect import utils as m_utils
 from docker_ui.home import generalfunctions
-
+import properties
+import requests
+import json
+import datetime
 
 class IndexView(TemplateView):
     template_name = 'app_deployment.html'
@@ -127,9 +130,9 @@ def installSoftwares(request):
             else:            
                 err_msg += 'Error occurred while importing package '+package+'\n'
 
-            if "docker" in package_name.lower():
-                isDocker = True
-                dockerEnv = env_id
+            #if "docker" in package_name.lower():
+            #    isDocker = True
+            dockerEnv = env_id
         
         #app_info = []
         #respose_app = m_utils.add_application(env_id, session_id, app_info)   
@@ -139,8 +142,7 @@ def installSoftwares(request):
            
         if response_deploy['status_code'] == 200:
             msg +='Package deployment initiated \n'
-            if isDocker:
-                loopAndUpdateIP(dockerEnv)
+            loopAndUpdateIP(dockerEnv)
         elif response_deploy['status_code'] == 404:
             err_msg += ' Specified session does not exist \n'             
         elif response_deploy['status_code'] == 401:
@@ -333,11 +335,6 @@ def createCustomPackage(request):
  
     
 def test_fn(request):
-    
-    import requests
-    import json
-    import datetime
-    
     ip = 'controller-demodevstack-xppgiav6.srv.ravcloud.com'
     ###Creating auth_token
     data = {"auth": {"tenantName": "demo", "passwordCredentials": {"username": "demo", "password": "demo"}}}
@@ -454,5 +451,58 @@ def test_fn(request):
     
     #time.sleep(2)    
     
+def createInstance(request):
+    image_id=request.GET.get('image_id')
+    flavor_id='http://tacker-mitaka-y8uyph4a.srv.ravcloud.com:8774/v2.1/119acd9639414c37a9ad92c9b80ff8bb/flavors/2'
 
-    
+
+    data = {
+        "server": {"name": "PATinstance1", "imageRef": image_id, "flavorRef": flavor_id,
+                   "max_count": 1, "min_count": 1, "key_name": "dockerkey", "networks":[{"uuid": "b6d9343a-4521-4cfd-b827-962888f286cc"}]}
+    }
+
+    print data
+    ip = properties.openstack_IP
+    user = properties.openstack_user
+    tenant = properties.openstack_tenant
+    password = properties.openstack_password
+
+    resp = generalfunctions.funcCreateAuthTokenAndGetEP(ip, user, tenant, password, "nova")
+    auth_token = resp["auth_token"]
+    url = resp["endpoint"]
+    print auth_token
+    print url
+
+
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
+
+    response = requests.post(url+"/servers", data=json.dumps(data), headers=headers)
+    print response
+
+    response = response.json()
+    checkMachineStatusAndUpdateIp(url, auth_token, response["server"]["id"])
+    return JsonResponse({"status":"success", "server_id": response["server"]["id"]})
+
+def checkMachineStatusAndUpdateIp(url, auth_token, server_id):
+    ip = properties.openstack_IP
+    user = properties.openstack_user
+    tenant = properties.openstack_tenant
+    password = properties.openstack_password
+
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
+    print "here"
+    loop = True
+    while loop:
+        response = requests.get(url + "/servers/"+server_id, headers=headers)
+        response = response.json()
+        if response["server"]["status"] == "ACTIVE":
+            print response
+            ip = response["server"]['addresses']['net_mgmt'][0]['addr']
+            if ip != "":
+                name = response["server"]['name']
+                port = '2375'
+                print ip
+                print name
+
+                generalfunctions.addNode(ip, port, name)
+                loop = False

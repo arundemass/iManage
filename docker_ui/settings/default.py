@@ -246,8 +246,8 @@ CORS_EXPOSE_HEADERS = (
 
 MURANO_CONNECT = {
         'ip': 'controller-demodevstack-xvitqfjt.srv.ravcloud.com',
-        'tenantname':'demo',
-        'username':'demo',
+        'tenantname':'admin',
+        'username':'admin',
         'password':'demo',
         'admin_token':'demo',
         'env_name_prefix':'env1_',
@@ -270,10 +270,12 @@ MURANO_PACKAGE_NAMES = {
 
     }
 
-MURANO_KEY_PAIR_NAME = 'app_deploy'
+MURANO_KEY_PAIR_NAME = 'cloud'
 
-MURANO_CUSTOM_PACKAGE_DIR = '/home/unameit/Downloads/deployPortal/static-assets/murano_packages'
+MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-kubernetes'
 
-UPLOAD_FILE_PATH = '/home/unameit'
+MURANO_CUSTOM_PACKAGE_DIR = '/home/rdk/PycharmProjects/iManage/static-assets/murano_packages'
+
+UPLOAD_FILE_PATH = '/home/rdk/files'
 
 

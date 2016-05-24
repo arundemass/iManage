@@ -10,9 +10,9 @@ from django.conf import settings
 import keystoneclient.v2_0.client as ksclient
 from muranoclient.v1 import client as v1_client    
 from muranoclient.v1 import shell as v1_shell
+from docker_ui.home import generalfunctions
 
 from oslo_log import log as logging
-from pip._vendor.distlib.util import zip_dir
 LOG = logging.getLogger(__name__)
 
 
@@ -26,6 +26,7 @@ env_name_prefix = settings.MURANO_CONNECT['env_name_prefix']
 endpoint = "http://"+ip+":8082/"
 key_name = settings.MURANO_KEY_PAIR_NAME
 CUSTOM_PACKAGE_DIR = settings.MURANO_CUSTOM_PACKAGE_DIR
+default_image = settings.MURANO_DAFAULT_IMAGE
 
 '''
     Create auth_token
@@ -166,7 +167,7 @@ def add_application(env_id,session_id,app_info):
         "keyname": key_name,        
         "assignFloatingIp": "true",   
         "availabilityZone": "nova",    
-        "image": "debian-8-m-agent.qcow2",
+        "image": default_image,
         "?": {
           "type": "io.murano.resources.LinuxMuranoInstance",
           "id": generate_uuid()
@@ -180,12 +181,6 @@ def add_application(env_id,session_id,app_info):
       }
       
     }
-    
-    
-    
-    
-    
-    
     
     '''instance_json = {
       "instance": {
@@ -253,7 +248,7 @@ def deploy_session(env_id,session_id):
 
 
 def get_deployment_status(env_id):
-    
+    ip = settings.MURANO_CONNECT['ip']
     # ='1a5cb9ba73a94c95af20bd2f4d5d6c9a'
     auth_token = get_auth_token()
     headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
@@ -264,6 +259,13 @@ def get_deployment_status(env_id):
     print resp_deploy
     
     if(resp_deploy['status']):
+        if resp_deploy['services']:
+            instance = resp_deploy['services'][0]
+            ip = instance['ipAddresses'][0]
+            name = instance['name']
+            port = '2375'
+            generalfunctions.addNode(ip, port, name)
+            print ip
         return resp_deploy
     else:
         return False
@@ -475,11 +477,6 @@ def get_murano_packages():
            #resp += entry['service']
            
            resp.append(entry['service'])
-           
-     
-          
-    print resp
-    
     
     respc = []   
     #pkg1 = "{'source': 'murano', 'package_name': 'io.murano.apps.pivotal.OpsManager', 'format': 'package', 'type':'option','Label':'Mysql'}"

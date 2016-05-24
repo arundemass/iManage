@@ -117,8 +117,9 @@ def find_nth(haystack, needle, n):
 
 def addNode(ip, port, name):
     cursor = connections['default'].cursor()
-
+    print "inside addNode"
     sql = "INSERT INTO nodes(ip, port, name) " + "VALUES ('" + ip + "','" + port + "','" + name + "')"
     cursor.execute(sql)
     rowid = cursor.lastrowid
+    print rowid
 
