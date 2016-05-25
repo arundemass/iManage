@@ -16,5 +16,6 @@ urlpatterns = [
     url(r'^uploadFiles/', views.uploadFiles),
     url(r'^createCustomPackage/', views.createCustomPackage),
     url(r'^createInstance/', views.createInstance),
+    url(r'^deployHeatTemplate/', views.deployHeatTemplate),
 
 ]

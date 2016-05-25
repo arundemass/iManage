@@ -97,15 +97,15 @@ def funcCreateAuthTokenAndGetEP(ip, user, tenant, password,servicename):
     # Print(response.text)
     response = response.json()
     auth_token = response["access"]["token"]["id"]
+    tenantId = response["access"]["token"]["tenant"]["id"]
     service_catalog = response["access"]["serviceCatalog"]
     endpoint = ''
     for services in service_catalog:
         if (servicename == services["name"]):
             endpoint = services["endpoints"][0]["publicURL"]
-    print endpoint
     print "http://" + ip + endpoint[find_nth(endpoint, ":", 2):]
 
-    return {"auth_token": auth_token, "endpoint": "http://" + ip + endpoint[find_nth(endpoint, ":", 2):]}
+    return {"auth_token": auth_token, "endpoint": "http://" + ip + endpoint[find_nth(endpoint, ":", 2):], "tenantId":tenantId}
 
 def find_nth(haystack, needle, n):
     start = haystack.find(needle)

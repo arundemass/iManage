@@ -134,7 +134,7 @@ STATIC_URL = '/static/'
 #MURANO_APP related settings
 
 MURANO_CONNECT = {
-        'ip': 'controller-demodevstack-xvitqfjt.srv.ravcloud.com',
+        'ip': 'tacker-mitaka-y8uyph4a.srv.ravcloud.com',
         'tenantname':'admin',
         'username':'admin',
         'password':'demo',
@@ -167,5 +167,5 @@ MURANO_CUSTOM_PACKAGE_DIR = '/home/rdk/PycharmProjects/iManage/static-assets/mur
 UPLOAD_FILE_PATH = '/home/rdk/files'
 
 
-MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-kubernetes'
+MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-murano'
 

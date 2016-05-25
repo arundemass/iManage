@@ -13,6 +13,7 @@ import properties
 import requests
 import json
 import datetime
+import random
 
 class IndexView(TemplateView):
     template_name = 'app_deployment.html'
@@ -506,3 +507,70 @@ def checkMachineStatusAndUpdateIp(url, auth_token, server_id):
 
                 generalfunctions.addNode(ip, port, name)
                 loop = False
+
+
+def deployHeatTemplate(request):
+    ip = properties.openstack_IP
+    user = properties.openstack_user
+    tenant = properties.openstack_tenant
+    password = properties.openstack_password
+
+    #path = handle_uploaded_file(request.FILES['templateFile'])
+    path="/home/rdk/Desktop/docker_heat.yaml"
+    fileData = open(path, 'rb').read()
+    resp = generalfunctions.funcCreateAuthTokenAndGetEP(ip, user, tenant, password, "nova")
+    auth_token = resp["auth_token"]
+    url = resp["endpoint"]
+    tenantId = resp["tenantId"]
+    print auth_token
+    print url
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
+    data = {"stack_name": "teststack"+random.random(), "template": fileData}
+
+    url = "http://" + ip + ":8004/v1/"+ tenantId +"/stacks"
+    print url
+    print "#####"
+    print data
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+    print response
+    response = response.json()
+    print response["stack"]["links"][0]["href"]
+
+    url = response["stack"]["links"][0]["href"]
+    #url = "http://tacker-mitaka-y8uyph4a.srv.ravcloud.com:8004/v1/fd3164ec53b94437a281f5196febba72/stacks/teststack/3014b171-63df-481e-9444-79eadf684545"
+    loop = True
+    while loop:
+        response = requests.get(url, headers=headers)
+        response=response.json()
+        if response["stack"]["outputs"]:
+            outputs = response["stack"]["outputs"]
+            ip=""
+            name=""
+            for output in outputs:
+                if output["output_key"] == "name":
+                    name = output["output_value"]
+                if output["output_key"] == "ip":
+                    ip = output["output_value"]
+            port = '2375'
+            print ip
+            print name
+            generalfunctions.addNode(ip, port, name)
+            loop = False
+
+
+    return JsonResponse({"status": "success"})
+
+def handle_uploaded_file(f):
+    print f.name
+    UPLOAD_FILE_PATH = settings.UPLOAD_FILE_PATH
+    extension = f.name.split('.')[-1]
+    filename = f.name +`random.random()` + '.' + extension
+    path = UPLOAD_FILE_PATH + "/" + f.name
+    #path = 'c:\\files\\' + f.name
+    with open(path, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return path
+
+
+
