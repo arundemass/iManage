@@ -7,3 +7,6 @@ openstack_IP = 'controller-liberty-nwcylxrc.srv.ravcloud.com'
 openstack_user = 'admin'
 openstack_tenant = 'admin'
 openstack_password = 'demo'
+
+appendProxy='ctsc00293390101.cts.com:18079/'
+#appendProxy=''
