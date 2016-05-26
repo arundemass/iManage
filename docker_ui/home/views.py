@@ -161,6 +161,7 @@ def PullImage(request):
     if tag=='':
         tag='latest'
 
+    name = properties.appendProxy + name
     r = generalfunctions.funcPullImage(docker_server_url, name, tag)
 
     messages.error(request, r["content"])
