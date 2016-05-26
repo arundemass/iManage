@@ -14,6 +14,7 @@ import requests
 import json
 import datetime
 import random
+import base64
 
 class IndexView(TemplateView):
     template_name = 'app_deployment.html'
@@ -454,12 +455,17 @@ def test_fn(request):
     
 def createInstance(request):
     image_id=request.GET.get('image_id')
-    flavor_id='http://tacker-mitaka-y8uyph4a.srv.ravcloud.com:8774/v2.1/119acd9639414c37a9ad92c9b80ff8bb/flavors/2'
+    flavor_id='http://controller-liberty-nwcylxrc.srv.ravcloud.com:8774/v2.1/ed1a18a6cdae45ddaedf730116f156a4/flavors/2a9bbee2-a94b-463b-be36-30cc6a16e480'
+
+
+    encoded_string = ""
+    with open("/home/user_data.file", "rb") as data_file:
+        encoded_string = base64.b64encode(data_file.read())
 
 
     data = {
-        "server": {"name": "PATinstance1", "imageRef": image_id, "flavorRef": flavor_id,
-                   "max_count": 1, "min_count": 1, "key_name": "dockerkey", "networks":[{"uuid": "b6d9343a-4521-4cfd-b827-962888f286cc"}]}
+        "server": {"name": "instance1", "imageRef": image_id, "flavorRef": flavor_id,
+                   "max_count": 1, "min_count": 1, "key_name": "openstack", "networks":[{"uuid": "a23b0dde-64e5-4bf9-b958-0c9d4f41d14b"}], "user_data":encoded_string}
     }
 
     print data
@@ -515,9 +521,13 @@ def deployHeatTemplate(request):
     tenant = properties.openstack_tenant
     password = properties.openstack_password
 
-    #path = handle_uploaded_file(request.FILES['templateFile'])
-    path="/home/rdk/Desktop/docker_heat.yaml"
+
+    print "********************************************"
+
+    path = handle_uploaded_file(request.FILES['templateFile'])
+    #path="/home/rdk/Desktop/docker_heat.yaml"
     fileData = open(path, 'rb').read()
+    print fileData
     resp = generalfunctions.funcCreateAuthTokenAndGetEP(ip, user, tenant, password, "nova")
     auth_token = resp["auth_token"]
     url = resp["endpoint"]
@@ -525,7 +535,7 @@ def deployHeatTemplate(request):
     print auth_token
     print url
     headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
-    data = {"stack_name": "teststack"+random.random(), "template": fileData}
+    data = {"stack_name": "teststack"+str(random.random()), "template": fileData}
 
     url = "http://" + ip + ":8004/v1/"+ tenantId +"/stacks"
     print url
@@ -551,10 +561,10 @@ def deployHeatTemplate(request):
                     name = output["output_value"]
                 if output["output_key"] == "ip":
                     ip = output["output_value"]
-            port = '2375'
-            print ip
-            print name
-            generalfunctions.addNode(ip, port, name)
+                port = '2375'
+                print ip
+                print name
+                generalfunctions.addNode(ip, port, name)
             loop = False
 
 

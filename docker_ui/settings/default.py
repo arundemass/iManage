@@ -245,7 +245,7 @@ CORS_EXPOSE_HEADERS = (
 #MURANO_APP related settings
 
 MURANO_CONNECT = {
-        'ip': 'tacker-mitaka-y8uyph4a.srv.ravcloud.com',
+        'ip': 'controller-liberty-nwcylxrc.srv.ravcloud.com',
         'tenantname':'admin',
         'username':'admin',
         'password':'demo',

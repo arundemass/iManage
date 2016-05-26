@@ -561,13 +561,13 @@ def AddNode(request):
     port = request.GET.get('port')
     name = request.GET.get('name')
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = sock.connect_ex((ip, int(port)))
-    if result == 0:
-        print "Port is open"
-    else:
-        print "Port is not open"
-        return JsonResponse({'status': 'failed', 'content': 'Please check the IP and port('+ip + ":" + port +')'})
+    # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # result = sock.connect_ex((ip, int(port)))
+    # if result == 0:
+    #     print "Port is open"
+    # else:
+    #     print "Port is not open"
+    #     return JsonResponse({'status': 'failed', 'content': 'Please check the IP and port('+ip + ":" + port +')'})
 
     try:
         cursor = connections['default'].cursor()

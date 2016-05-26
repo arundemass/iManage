@@ -200,18 +200,27 @@
                 $("#fromSnapshotDiv").show();
                 $("#applicationPackagesDiv").hide();
                 $("#createPackageDiv").hide();
+                 $("#fromHeatTemplate").hide();
+                 $("#deployButtonDiv").show();
             }else if(val == "murano"){
                 $("#applicationPackagesDiv").show();
                 $("#createPackageDiv").hide();
                 $("#fromSnapshotDiv").hide();
+                 $("#fromHeatTemplate").hide();
+                 $("#deployButtonDiv").show();
             }else if(val == "createmurano"){
                 $("#applicationPackagesDiv").hide();
                 $("#createPackageDiv").show();
+                 $("#fromHeatTemplate").hide();
                 $("#fromSnapshotDiv").hide();
+                $("#deployButtonDiv").show();
             }else{
                 $("#applicationPackagesDiv").hide();
-                $("#createPackageDiv").show();
+                $("#createPackageDiv").hide();
+                $("#fromHeatTemplate").show();
                 $("#fromSnapshotDiv").hide();
+                $("#deployButtonDiv").hide();
+
             }
         });
 
@@ -619,12 +628,12 @@
                 -->
 
                 <div style="clear:both;height:5px"></div>
-                <h2>Select An Option To Create Docker Machine</h2>
+                <h2>Select An Option To Create VM</h2>
                 <select id="operationSelect" class="form-control" style="width:450px;">
                     <option value="snapshot">Create from Snapshot/Image</option>
-                    <option value="murano">Create using already available Murano packages</option>
-                    <option value="createmurano">Create using a custom Murano package</option>
-                    <option value="createheat">Create using Heat template</option>
+                    <option value="murano">Create from Murano packages</option>
+                    <option value="createmurano">Create from customized Murano package</option>
+                    <option value="createheat">Create from Heat template</option>
                 </select>
 
                 <div id="fromSnapshotDiv">
@@ -633,6 +642,8 @@
 
                     </select>
                 </div>
+
+
 
                 <div id="applicationPackagesDiv" style="display:none;">
                     <h2 class="content-subhead">Application Packages</h2>
@@ -808,78 +819,8 @@
 			  
 
                 </script>
-
-
-                <!--<select id="images" name="images"  style="width:450px"></select>-->
-
-
-                <!--
-                                <table id="imageTable" class="pure-table" style="table-layout: fixed; word-wrap: break-word; width: 750px;">
-                                    <thead>
-
-
-
-                                        <td>
-                            <input type="checkbox" id="as" name="ApacheServer" value="apachehttpserver"> Apache Server
-                        </td>
-                <td>
-                            <input type="checkbox" id="at" name="ApacheTomcat" value="apachetomcat"> Apache Tomcat
-                        </td>
-                </tr>
-                <tr>
-                  <td>
-                  <input type="checkbox" id="sql" name="MySql" value="mysql" > MySql
-                </td>
-                <td>
-                            <input type="checkbox" id="dc" name="DockerContainer" value="dockerapp"> Docker
-                        </td>
-                </tr>
-                <tr>
-                <td>
-                            <input type="checkbox" id="kc" name="KubernetesCluster" value="kubernetescluster"> Kubernetes Cluster
-                        </td>
-                <td>
-                            <input type="checkbox" id="ps" name="PostgreSql" value="postgresql"> PostgreSql
-                        </td>
-                </tr>
-                <tr>
-                <td>
-                            <input type="checkbox" id="wp" name="WordPress" value="wordpess"> WordPress
-                        </td>
-                <td>
-                            <input type="checkbox" id="stac" name="Stackato" value="stackatonode"> Stackato
-                        </td>
-                </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        <tr>
-
-                                            <td>
-                                            Select Image
-                                            </td>
-                                            <td>
-                                            <select> </select>
-                                            </td>
-
-                                        <tr>
-
-                                        <tr>
-
-                                            <td>
-                                            Key Pair
-                                            </td>
-                                            <td>
-                                            <select> </select>
-                                            </td>
-
-                                        <tr>
-
-                                    </tbody>
-                                </table> -->
                 <br>
-                <div class="form-group">
+                <div class="form-group" id="deployButtonDiv">
                     <input type="button" class="btn btn-success" value="Deploy" align="center"
                            onclick="checkCheckBoxes(this);"/>
                 </div>
@@ -888,5 +829,21 @@
     </div>
     <script src="{% static 'js/ui.js' %}"></script>
 </form>
+
+<div id="layout" style="margin-left:240px;margin-top: -72px">
+<div id="fromHeatTemplate" style="display:none;">
+    <h2>Select the Heat Template</h2>
+    <form id="frmDeveloper" action="deployHeatTemplate/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+        <div id="templateFile">
+            <div class="form-group">
+                <label for="templateFile" class="control-label">Image File:</label>
+                <input type="file" name="templateFile" id="ImageFile" />
+            </div>
+        </div>
+        <input type="submit" name="Submit" value="Submit">
+    </form>
+    </select>
+</div>
+</div>
 </body>
 </html>
