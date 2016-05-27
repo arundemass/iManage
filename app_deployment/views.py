@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 
 from django.conf import settings
 from django.shortcuts import render
@@ -15,6 +15,7 @@ import json
 import datetime
 import random
 import base64
+from django.contrib import messages
 
 class IndexView(TemplateView):
     template_name = 'app_deployment.html'
@@ -455,17 +456,17 @@ def test_fn(request):
     
 def createInstance(request):
     image_id=request.GET.get('image_id')
-    flavor_id='http://controller-liberty-nwcylxrc.srv.ravcloud.com:8774/v2.1/ed1a18a6cdae45ddaedf730116f156a4/flavors/2a9bbee2-a94b-463b-be36-30cc6a16e480'
+    flavor_id='http://controller-liberty-nwcylxrc.srv.ravcloud.com:8774/v2.1/b6461b23240e42fb87c19c5c1fced4bc/flavors/85a1652e-3f82-4cae-bc76-df0557c91f5e'
 
 
-    encoded_string = ""
-    with open("/home/user_data.file", "rb") as data_file:
-        encoded_string = base64.b64encode(data_file.read())
+    #encoded_string = ""
+    #with open("/home/user_data.file", "rb") as data_file:
+    #    encoded_string = base64.b64encode(data_file.read())
 
 
     data = {
         "server": {"name": "instance1", "imageRef": image_id, "flavorRef": flavor_id,
-                   "max_count": 1, "min_count": 1, "key_name": "openstack", "networks":[{"uuid": "a23b0dde-64e5-4bf9-b958-0c9d4f41d14b"}], "user_data":encoded_string}
+                   "max_count": 1, "min_count": 1, "key_name": "openstack", "networks":[{"uuid": "f60d23a7-fb2e-41a1-8d09-2bc6a590f35f"}]}
     }
 
     print data
@@ -544,6 +545,7 @@ def deployHeatTemplate(request):
     response = requests.post(url, data=json.dumps(data), headers=headers)
     print response
     response = response.json()
+    print response
     print response["stack"]["links"][0]["href"]
 
     url = response["stack"]["links"][0]["href"]
@@ -552,7 +554,8 @@ def deployHeatTemplate(request):
     while loop:
         response = requests.get(url, headers=headers)
         response=response.json()
-        if response["stack"]["outputs"]:
+        print response
+        if 'outputs' in response["stack"]:
             outputs = response["stack"]["outputs"]
             ip=""
             name=""
@@ -567,8 +570,9 @@ def deployHeatTemplate(request):
                 generalfunctions.addNode(ip, port, name)
             loop = False
 
+    messages.error(request, 'Stack created and deployed successfully.')
+    return HttpResponseRedirect('/app_deployment/')
 
-    return JsonResponse({"status": "success"})
 
 def handle_uploaded_file(f):
     print f.name

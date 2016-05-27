@@ -58,7 +58,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'docker_ui',
         # The rest is not used with sqlite3:
-        'USER': 'root',
+        'USER': 'docker_ui',
         'PASSWORD': 'password-1',
         'CONN_MAX_AGE': 60,
         'HOST': 'localhost',
@@ -276,6 +276,6 @@ MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-murano'
 
 MURANO_CUSTOM_PACKAGE_DIR = '/home/rdk/PycharmProjects/iManage/static-assets/murano_packages'
 
-UPLOAD_FILE_PATH = '/home/rdk/files'
+UPLOAD_FILE_PATH = '/home/ubuntu/files'
 
 

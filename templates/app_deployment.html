@@ -194,6 +194,11 @@
     $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
 
     $(document).ready(function(){
+
+        {% if messages %}
+            $("#statusModal").modal("show");
+        {% endif %}
+
         $("#operationSelect").change(function(){
             val = $("#operationSelect").val();
             if(val == "snapshot"){
@@ -305,13 +310,12 @@
 
         if(selection == "snapshot"){
             image_id=$("#imageSelect").val();
-            alert(image_id);
             $.ajax({
                 type: "GET",
                   url:"/app_deployment/createInstance/?image_id="+image_id,
                   dataType: 'json',
                   success: function(json){
-                    alert(json.server_id);
+                    alert("The instance created successfully with id: "+json.server_id);
                   }
             });
         }else{
@@ -845,5 +849,29 @@
     </select>
 </div>
 </div>
+
+<div id="statusModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Status</h4>
+            </div>
+            <div class="modal-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <span {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</span><br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+	</div>
 </body>
 </html>

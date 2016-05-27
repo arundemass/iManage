@@ -164,7 +164,7 @@ MURANO_KEY_PAIR_NAME = 'cloud'
 
 MURANO_CUSTOM_PACKAGE_DIR = '/home/rdk/PycharmProjects/iManage/static-assets/murano_packages'
 
-UPLOAD_FILE_PATH = '/home/rdk/files'
+UPLOAD_FILE_PATH = '/home/ubuntu/files'
 
 
 MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-murano'
