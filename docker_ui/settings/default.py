@@ -272,10 +272,12 @@ MURANO_PACKAGE_NAMES = {
 
 MURANO_KEY_PAIR_NAME = 'cloud'
 
-MURANO_DAFAULT_IMAGE = 'ubuntu14.04-x64-murano'
+MURANO_DAFAULT_IMAGE = 'Docker'
 
-MURANO_CUSTOM_PACKAGE_DIR = '/home/rdk/PycharmProjects/iManage/static-assets/murano_packages'
+MURANO_CUSTOM_PACKAGE_DIR = 'C:\\Users\\428430\\PycharmProjects\\iManage\\static-assets\\murano_packages'
 
-UPLOAD_FILE_PATH = '/home/ubuntu/files'
+UPLOAD_FILE_PATH = 'C:\\files'
+
+
 
 

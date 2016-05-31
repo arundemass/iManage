@@ -3,6 +3,7 @@ import requests
 import urllib
 import json
 from django.db import connections
+import properties
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 
 
@@ -27,9 +28,14 @@ def funcCreateContainer(url, name, data):
         return {'status': 'failed', 'content': 'Deploying the container failed with the following error: '+r.content}
 
 def funcStartContainer(url, id):
+    headers = {'Content-Type': 'application/json'}
+    data={
+          "PortBindings": { "8080/tcp": [{ "HostPort": "8888" }] }
+        }
+    print data
     r = requests.post(url+'/containers/'+id+'/attach?logs=1&stream=0&stdout=1')
 
-    r = requests.post(url + '/containers/'+id+'/start')
+    r = requests.post(url + '/containers/'+id+'/start', data=json.dumps(data), headers=headers)
     if r.status_code == 204:
         return {'status': 'success', 'content': 'Container Started successfully'}
     elif r.status_code == 304:
@@ -78,34 +84,34 @@ def funcDeleteContainer(url, id):
         return {'status': 'failed', 'content': 'Deleting the container failed with the following error: ' + r.content}
 
 def funcCreateAuthToken(ip, user, tenant, password):
-    data = {"auth": {"tenantName": tenant, "passwordCredentials": {"username": user, "password": password}}}
-    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    data_json = json.dumps(data)
-    response = requests.post('http://' + ip + ':35357/v2.0/tokens', data=data_json, headers=headers)
+    # data = {"auth": {"tenantName": tenant, "passwordCredentials": {"username": user, "password": password}}}
+    # headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+    # data_json = json.dumps(data)
+    # response = requests.post('http://' + ip + ':35357/v2.0/tokens', data=data_json, headers=headers)
+    #
+    # # Print(response.text)
+    # response = response.json()
+    #auth_token = response["access"]["token"]["id"]
 
-    # Print(response.text)
-    response = response.json()
-    auth_token = response["access"]["token"]["id"]
+    auth_token = properties.TOKEN
     return auth_token
 
 def funcCreateAuthTokenAndGetEP(ip, user, tenant, password,servicename):
-    data = {"auth": {"tenantName": tenant, "passwordCredentials": {"username": user, "password": password}}}
-    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    data_json = json.dumps(data)
-    response = requests.post('http://' + ip + ':35357/v2.0/tokens', data=data_json, headers=headers)
+    # data = {"auth": {"tenantName": tenant, "passwordCredentials": {"username": user, "password": password}}}
+    # headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+    # data_json = json.dumps(data)
+    # response = requests.post('http://' + ip + ':35357/v2.0/tokens', data=data_json, headers=headers)
+    #
+    # # Print(response.text)
+    # response = response.json()
+    # auth_token = response["access"]["token"]["id"]
+    # tenantId = response["access"]["token"]["tenant"]["id"]
+    # service_catalog = response["access"]["serviceCatalog"]
+    auth_token=properties.TOKEN
+    tenantId=properties.TENANT
+    endpoint = properties.ENDPOINT
 
-    # Print(response.text)
-    response = response.json()
-    auth_token = response["access"]["token"]["id"]
-    tenantId = response["access"]["token"]["tenant"]["id"]
-    service_catalog = response["access"]["serviceCatalog"]
-    endpoint = ''
-    for services in service_catalog:
-        if (servicename == services["name"]):
-            endpoint = services["endpoints"][0]["publicURL"]
-    print "http://" + ip + endpoint[find_nth(endpoint, ":", 2):]
-
-    return {"auth_token": auth_token, "endpoint": "http://" + ip + endpoint[find_nth(endpoint, ":", 2):], "tenantId":tenantId}
+    return {"auth_token": auth_token, "endpoint": endpoint, "tenantId":tenantId}
 
 def find_nth(haystack, needle, n):
     start = haystack.find(needle)

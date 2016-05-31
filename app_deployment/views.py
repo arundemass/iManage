@@ -235,7 +235,7 @@ def handle_uploaded_file(f):
     extension = f.name.split('.')[-1]
     filename = f.name +"oho"+ '.' + extension
     #path = properties.filestoreparth + f.name
-    path = settings.UPLOAD_FILE_PATH +"/"+ f.name
+    path = settings.UPLOAD_FILE_PATH +"\\"+ f.name
     with open(path, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
@@ -456,20 +456,21 @@ def test_fn(request):
     
 def createInstance(request):
     image_id=request.GET.get('image_id')
-    flavor_id='http://controller-liberty-nwcylxrc.srv.ravcloud.com:8774/v2.1/b6461b23240e42fb87c19c5c1fced4bc/flavors/85a1652e-3f82-4cae-bc76-df0557c91f5e'
+    flavor_id=properties.FLAVOR
 
 
     #encoded_string = ""
     #with open("/home/user_data.file", "rb") as data_file:
     #    encoded_string = base64.b64encode(data_file.read())
 
-
+    print image_id
     data = {
         "server": {"name": "instance1", "imageRef": image_id, "flavorRef": flavor_id,
-                   "max_count": 1, "min_count": 1, "key_name": "openstack", "networks":[{"uuid": "f60d23a7-fb2e-41a1-8d09-2bc6a590f35f"}]}
+                   "max_count": 1, "min_count": 1, "key_name": properties.KEYPAIR, "networks":[{"uuid": properties.NETWORK}]}
     }
 
     print data
+    print json.dumps(data)
     ip = properties.openstack_IP
     user = properties.openstack_user
     tenant = properties.openstack_tenant
@@ -483,9 +484,10 @@ def createInstance(request):
 
 
     headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
-
+    print url+"/servers"
     response = requests.post(url+"/servers", data=json.dumps(data), headers=headers)
     print response
+    print response.json()
 
     response = response.json()
     checkMachineStatusAndUpdateIp(url, auth_token, response["server"]["id"])
@@ -496,24 +498,30 @@ def checkMachineStatusAndUpdateIp(url, auth_token, server_id):
     user = properties.openstack_user
     tenant = properties.openstack_tenant
     password = properties.openstack_password
-
+    print server_id
     headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
     print "here"
     loop = True
     while loop:
+        print url + "/servers/"+server_id
         response = requests.get(url + "/servers/"+server_id, headers=headers)
+        print response
         response = response.json()
-        if response["server"]["status"] == "ACTIVE":
+        if response["server"]["status"]:
             print response
-            ip = response["server"]['addresses']['net_mgmt'][0]['addr']
-            if ip != "":
-                name = response["server"]['name']
-                port = '2375'
-                print ip
-                print name
+            if response["server"]['addresses']:
+                if response["server"]['addresses']['Intranet-10.142.153.0/24']:
+                    if response["server"]['addresses']['Intranet-10.142.153.0/24'][0]:
+                        if response["server"]['addresses']['Intranet-10.142.153.0/24'][0]['addr']:
+                            ip = response["server"]['addresses']['Intranet-10.142.153.0/24'][0]['addr']
+                            if ip != "":
+                                name = response["server"]['name']
+                                port = '2375'
+                                print ip
+                                print name
 
-                generalfunctions.addNode(ip, port, name)
-                loop = False
+                                generalfunctions.addNode(ip, port, name)
+                                loop = False
 
 
 def deployHeatTemplate(request):
@@ -550,24 +558,26 @@ def deployHeatTemplate(request):
 
     url = response["stack"]["links"][0]["href"]
     #url = "http://tacker-mitaka-y8uyph4a.srv.ravcloud.com:8004/v1/fd3164ec53b94437a281f5196febba72/stacks/teststack/3014b171-63df-481e-9444-79eadf684545"
+    print url
     loop = True
     while loop:
         response = requests.get(url, headers=headers)
         response=response.json()
-        print response
         if 'outputs' in response["stack"]:
             outputs = response["stack"]["outputs"]
             ip=""
             name=""
             for output in outputs:
+                print response
                 if output["output_key"] == "name":
-                    name = output["output_value"]
+                    name = output["output_value"][0]
                 if output["output_key"] == "ip":
-                    ip = output["output_value"]
-                port = '2375'
-                print ip
-                print name
-                generalfunctions.addNode(ip, port, name)
+                    ip = output["output_value"][0]
+
+            port = '2375'
+            print ip
+            print name
+            generalfunctions.addNode(ip, port, name)
             loop = False
 
     messages.error(request, 'Stack created and deployed successfully.')

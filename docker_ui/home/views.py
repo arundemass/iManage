@@ -115,7 +115,9 @@ class DockerManageView(TemplateView):
 
 def GetImages(request):
     docker_server_url = request.session['currentip']
+    print docker_server_url
     resp = requests.get(docker_server_url+'/images/json')
+    print resp
     item = resp.json()
     return JsonResponse({'status': 'success', 'content': item})
 
@@ -259,7 +261,7 @@ def RunContainer(request):
           "Env": envs,
           "Image": image,
           "HostConfig": {"Binds": volumes},
-          "Ports": jsonport
+          "ExposedPorts": { "8080/tcp": {} }
         }
     #,"HostConfig":{"Binds": volumes}
     print json.dumps(data)
@@ -324,7 +326,7 @@ def HandleSwarm(request):
         port = master["port"]
         name = master["name"]
         url = 'http://'+master["ip"] + ':' + master["port"]
-        resp = generalfunctions.funcPullImage(url, 'swarm', '1.1.3')
+        resp = generalfunctions.funcPullImage(url, properties.appendProxy+'swarm', '1.1.3')
         if resp["status"] == 'success':
             data={
               "AttachStdin": False,
@@ -334,7 +336,7 @@ def HandleSwarm(request):
               "OpenStdin": False,
               "StdinOnce": False,
               "Cmd": ["create"],
-              "Image": "swarm:1.1.3"
+              "Image": properties.appendProxy+"swarm:1.1.3"
             }
             masterContainer = generalfunctions.funcCreateContainer(url, name, data)
             if masterContainer["status"] == 'success':
@@ -373,7 +375,7 @@ def HandleSwarm(request):
         port = node["port"]
         name = node["name"]
         url = 'http://'+ ip + ':' + port
-        resp = generalfunctions.funcPullImage(url, 'swarm', '1.1.3')
+        resp = generalfunctions.funcPullImage(url, properties.appendProxy+'swarm', '1.1.3')
 
         if resp["status"] == 'success':
             data={
@@ -384,7 +386,7 @@ def HandleSwarm(request):
               "OpenStdin": False,
               "StdinOnce": False,
               "Cmd": ["join", "--addr="+ip+":"+port, "token://"+token],
-              "Image": "swarm:1.1.3"
+              "Image": properties.appendProxy+"swarm:1.1.3"
             }
             nodeContainer = generalfunctions.funcCreateContainer(url, name, data)
             if nodeContainer["status"] == 'success':
@@ -413,7 +415,7 @@ def HandleSwarm(request):
         name = master["name"] + 'manage'
         url = 'http://'+master["ip"] + ':' + master["port"]
 
-        resp = generalfunctions.funcPullImage(url, 'swarm', '1.1.3')
+        resp = generalfunctions.funcPullImage(url, properties.appendProxy+'swarm', '1.1.3')
         if resp["status"] == 'success':
             data={
               "PortBindings": { "2375/tcp": [{ "HostPort": "5001" }] },
@@ -424,7 +426,7 @@ def HandleSwarm(request):
               "OpenStdin": False,
               "StdinOnce": False,
               "Cmd": ["manage", "token://"+token],
-              "Image": "swarm:1.1.3"
+              "Image": properties.appendProxy+"swarm:1.1.3"
             }
             masterManagerContainer = generalfunctions.funcCreateContainer(url, name, data)
             if masterManagerContainer["status"] == 'success':
@@ -497,8 +499,9 @@ def GetNodes(request):
     print 'sql:' + sql
     cursor.execute(sql)
     results = namedtuplefetchall(cursor)
-
+    #del request.session['currentip']
     for row in results:
+        print row
         if 'currentip' in request.session:
             if request.session['currentip'] == 'http://'+row.ip+':'+row.port:
                 add = {'ip':row.ip, 'name':row.name, 'port':row.port, 'id':row.Id, 'selected':'true'}
@@ -675,7 +678,7 @@ def AddSwarmNode(request):
             print token
 
     url = 'http://' + ip + ':' + port
-    resp = generalfunctions.funcPullImage(url, 'swarm', '1.1.3')
+    resp = generalfunctions.funcPullImage(url, properties.appendProxy+'swarm', '1.1.3')
 
     if resp["status"] == 'success':
         data = {
@@ -1116,7 +1119,7 @@ def ListGlanceImages(request):
 
     headers = {'Content-type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': auth_token}
 
-    response = requests.get('http://' + ip + ':9292/v2/images', headers=headers)
+    response = requests.get('http://' + ip + ':9292/v1/images', headers=headers)
 
     return JsonResponse(response.json())
 
