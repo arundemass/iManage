@@ -14,6 +14,7 @@ from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 import properties
+import paramiko
 from murano_connect import utils as m_utils
 from django.conf import settings
 
@@ -208,7 +209,8 @@ def RunContainer(request):
     commands = request.GET.get('commands')
     environments = request.GET.get('environments')
     volumes = request.GET.get('volumes')
-    #tcpports = request.GET.get('tcpports')
+    portBindings = request.GET.get("portBindings")
+    strportBindings = portBindings
     docker_server_url = request.session['currentip']
 
     envs=[]
@@ -231,23 +233,21 @@ def RunContainer(request):
     else:
         volumes=None
 
-    jsonport=[]
-    # if tcpports!="":
-    #     ports=tcpports.split(",")
-    #     for port in ports:
-    #         port=port.split(":")
-    #         portarray = {"PrivatePort": int(port[1]), "PublicPort": int(port[0]), "Type": "tcp"}
-    #         jsonport.append(portarray)
-    # else:
-    #     tcpports=[]
-    #
-    # print jsonport
-    vols=[]
-    #for volume in volumes:
-    #    volume = volume.split(':')
-    #    vols.append(volume[0]+":"+volume[1])
-
-    #print vols
+    exposedPortsObj = {}
+    if portBindings!="":
+        portBindings = portBindings.split(",")
+        for portBinding in portBindings:
+            portBinding= portBinding.split(":")
+            if len(portBinding) == 2:
+                if portBinding[0] == '' or portBinding[1] == '':
+                    return JsonResponse({"status": "failure", "content": "Port binding in wrong format. Correct format: HOST_PORT:CONTAINER_PORT"})
+                else:
+                    index = portBinding[1]+'/tcp'
+                    exposedPortsObj[index]={}
+            else:
+                return JsonResponse({"status": "failure", "content": "Invalid Port binding."})
+    else:
+        portBindings=None
 
     headers = {'Content-Type': 'application/json'}
     data={
@@ -261,15 +261,16 @@ def RunContainer(request):
           "Env": envs,
           "Image": image,
           "HostConfig": {"Binds": volumes},
-          "ExposedPorts": { "8080/tcp": {} }
+          "ExposedPorts": exposedPortsObj
         }
-    #,"HostConfig":{"Binds": volumes}
+
     print json.dumps(data)
 
     r = generalfunctions.funcCreateContainer(docker_server_url, name, data)
+    if r["status"] == "success":
+        generalfunctions.funcAddPortsToDB(r["id"], str(strportBindings))
 
     return JsonResponse(r)
-
     #return JsonResponse({"status": "success"})
 
 
@@ -1304,3 +1305,18 @@ def OsHypervisorStatistics(request):
     response = requests.get(url+"/os-hypervisors/statistics", headers=headers)
 
     return JsonResponse(response.json())
+
+
+def SSHConnect(request):
+    ssh = paramiko.SSHClient()
+
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    k = paramiko.RSAKey.from_private_key_file("C:\\Users\\428430\\Desktop\\keys\\cloud.key")
+    ssh.connect('10.142.153.60', username='ubuntu', password='', pkey = k)
+
+    stdin, stdout, stderr = ssh.exec_command('uname')
+    print stdout.readlines()
+    ssh.close()
+
+    return JsonResponse({'status': 'success'})

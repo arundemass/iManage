@@ -231,10 +231,12 @@
 				image = $("#imageSelect").val();
 				commands = $("#commands").val();
 				environments = $("#environments").val();
+				portBindings = $("#portBindings").val();
+
 				volumes = $("#volumes").val();
 
 				$.ajax({
-					 url:"/RunContainer/?name="+name+"&image="+image+"&commands="+commands+"&environments="+environments+"&volumes="+volumes,
+					 url:"/RunContainer/?name="+name+"&image="+image+"&commands="+commands+"&environments="+environments+"&volumes="+volumes+"&portBindings="+portBindings,
 					 dataType: 'json',
 					 success:function(json){
 						 data = json.content;

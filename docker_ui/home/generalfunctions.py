@@ -5,6 +5,7 @@ import json
 from django.db import connections
 import properties
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from collections import namedtuple
 
 
 def funcPullImage(url, name, tag):
@@ -19,7 +20,7 @@ def funcCreateContainer(url, name, data):
     r = requests.post(url + '/containers/create?name='+name, data=json.dumps(data), headers=headers)
     if r.status_code == 201:
         d = json.loads(r.content)
-        return {'status': 'success', 'content': 'Container deployed successfully with ID: ' + d["Id"], 'id' : d["Id"]}
+        return {'status': 'success', 'content': 'Container deployed successfully with ID: ' + d["Id"], 'id' : d["Id"] }
     elif r.status_code == 404:
         return {'status': 'failed', 'content': 'Deploying the container failed with the following error: '+r.content}
     elif r.status_code == 406:
@@ -27,10 +28,40 @@ def funcCreateContainer(url, name, data):
     else:
         return {'status': 'failed', 'content': 'Deploying the container failed with the following error: '+r.content}
 
+def funcAddPortsToDB(container_id, port_bindings):
+    cursor = connections['default'].cursor()
+    sql = "INSERT INTO containers(container_id, port_bindings) " + "VALUES ('" + container_id + "','" + port_bindings + "')"
+    cursor.execute(sql)
+    rowid = cursor.lastrowid
+    print rowid
+
 def funcStartContainer(url, id):
     headers = {'Content-Type': 'application/json'}
+
+    cursor = connections['default'].cursor()
+    response = []
+    sql = "SELECT * FROM containers where container_id='"+id+"'"
+    print 'sql:' + sql
+    cursor.execute(sql)
+    results = namedtuplefetchall(cursor)
+    print results
+    exposedPortsObj = {}
+    for row in results:
+        portBindings = row.port_bindings
+        print portBindings
+        portBindings =portBindings.split(",")
+        for portBinding in portBindings:
+            portBinding= portBinding.split(":")
+            print portBinding
+            if len(portBinding) == 2:
+                if portBinding[0] == '' or portBinding[1] == '':
+                    return JsonResponse({"status": "failure", "content": "Port binding in wrong format. Correct format: HOST_PORT:CONTAINER_PORT"})
+                else:
+                    print "here"
+                    index = portBinding[1]+'/tcp'
+                    exposedPortsObj[index]=[{"HostPort": portBinding[0]}]
     data={
-          "PortBindings": { "8080/tcp": [{ "HostPort": "8888" }] }
+          "PortBindings": exposedPortsObj
         }
     print data
     r = requests.post(url+'/containers/'+id+'/attach?logs=1&stream=0&stdout=1')
@@ -44,6 +75,12 @@ def funcStartContainer(url, id):
         return {'status': 'failed', 'content': 'Container not found'}
     else:
         return {'status': 'failed', 'content': 'Starting the container failed with the following error: '+r.content}
+
+def namedtuplefetchall(cursor):
+    "Return all rows from a cursor as a namedtuple"
+    desc = cursor.description
+    nt_result = namedtuple('Result', [col[0] for col in desc])
+    return [nt_result(*row) for row in cursor.fetchall()]
 
 def funcAttachContainer(url, id):
     r = requests.post(url+'/containers/'+id+'/attach?logs=1&stream=0&stdout=1')
