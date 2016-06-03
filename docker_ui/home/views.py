@@ -1320,3 +1320,38 @@ def SSHConnect(request):
     ssh.close()
 
     return JsonResponse({'status': 'success'})
+
+
+
+def SSHConnect_File(request):
+    response = '{"master":[{"ip": "52.76.178.252", "port":"2375", "name":"master1"}],"node":[{"ip": "153.92.35.46", "port":"2375", "name":"node1"}, {"ip": "153.92.35.46", "port":"2375", "name":"node1"}]}'
+    #jsonrequest = json.loads(request.body)
+    jsonrequest = json.loads(response)
+    ssh = paramiko.SSHClient()
+    nodes =''
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    file_path = '/tmp/cluster.disco'
+
+    k = paramiko.RSAKey.from_private_key_file("/home/administrator/Desktop/seetha_default.pem")
+    for master in jsonrequest["master"]:
+        master_ip = master["ip"]
+
+    ssh.connect(master_ip, username='ubuntu', password='', pkey=k)
+
+    stdin, stdout, stderr = ssh.exec_command('sudo rm -rf '+ file_path)
+    stdin, stdout, stderr = ssh.exec_command('sudo touch ' + file_path)
+    stdin, stdout, stderr = ssh.exec_command('sudo chmod 777 ' + file_path)
+
+    for node in jsonrequest["node"]:
+        ip = node["ip"]
+        port = node["port"]
+        ip_port = ip + ':' + port
+        stdin, stdout, stderr = ssh.exec_command('echo ' + ip_port + ' >> ' + file_path)
+        nodes = nodes + ' ' + ip_port
+
+    print nodes
+
+    print stdout.readlines()
+    ssh.close()
+
+    return JsonResponse({'status': 'success'})
