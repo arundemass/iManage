@@ -290,7 +290,7 @@ def AttachContainer(request):
 
 @csrf_exempt
 def HandleSwarm(request):
-    response = '{"master":[{"ip": "153.92.34.6", "port":"2375", "name":"master1"}],"node":[{"ip": "153.92.35.46", "port":"2375", "name":"node1"}]}'
+    #response = '{"master":[{"ip": "153.92.34.6", "port":"2375", "name":"master1"}],"node":[{"ip": "153.92.35.46", "port":"2375", "name":"node1"}]}'
     print 'here'
     print 'Raw Data: "%s"' % request.body
     jsonrequest = json.loads(request.body)
@@ -1307,32 +1307,32 @@ def OsHypervisorStatistics(request):
     return JsonResponse(response.json())
 
 
-def SSHConnect(request):
-    ssh = paramiko.SSHClient()
-
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    k = paramiko.RSAKey.from_private_key_file("C:\\Users\\428430\\Desktop\\keys\\cloud.key")
-    ssh.connect('10.142.153.60', username='ubuntu', password='', pkey = k)
-
-    stdin, stdout, stderr = ssh.exec_command('uname')
-    print stdout.readlines()
-    ssh.close()
-
-    return JsonResponse({'status': 'success'})
+# def SSHConnect(request):
+#     ssh = paramiko.SSHClient()
+#
+#     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#
+#     k = paramiko.RSAKey.from_private_key_file("C:\\Users\\428430\\Desktop\\keys\\cloud.key")
+#     ssh.connect('10.142.153.60', username='ubuntu', password='', pkey = k)
+#
+#     stdin, stdout, stderr = ssh.exec_command('uname')
+#     print stdout.readlines()
+#     ssh.close()
+#
+#     return JsonResponse({'status': 'success'})
 
 
 
 def SSHConnect_File(request):
-    response = '{"master":[{"ip": "52.76.178.252", "port":"2375", "name":"master1"}],"node":[{"ip": "153.92.35.46", "port":"2375", "name":"node1"}, {"ip": "153.92.35.46", "port":"2375", "name":"node1"}]}'
-    #jsonrequest = json.loads(request.body)
-    jsonrequest = json.loads(response)
+    #response = '{"master":[{"ip": "52.76.178.252", "port":"2375", "name":"master1"}],"node":[{"ip": "153.92.35.46", "port":"2375", "name":"node1"}, {"ip": "153.92.35.46", "port":"2375", "name":"node1"}]}'
+    jsonrequest = json.loads(request.body)
+    #jsonrequest = json.loads(response)
     ssh = paramiko.SSHClient()
     nodes =''
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     file_path = '/tmp/cluster.disco'
 
-    k = paramiko.RSAKey.from_private_key_file("/home/administrator/Desktop/seetha_default.pem")
+    k = paramiko.RSAKey.from_private_key_file(properties.KEY_FILE_LOCATION)
     for master in jsonrequest["master"]:
         master_ip = master["ip"]
 

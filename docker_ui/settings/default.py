@@ -58,8 +58,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'docker_ui',
         # The rest is not used with sqlite3:
-        'USER': 'docker_ui',
-        'PASSWORD': 'password-1',
+        'USER': 'docker_user',
+        'PASSWORD': 'docker_password',
         'CONN_MAX_AGE': 60,
         'HOST': 'localhost',
         'PORT': '3306',

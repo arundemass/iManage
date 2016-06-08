@@ -510,10 +510,10 @@ def checkMachineStatusAndUpdateIp(url, auth_token, server_id):
         if response["server"]["status"]:
             print response
             if response["server"]['addresses']:
-                if response["server"]['addresses']['Intranet-10.142.153.0/24']:
-                    if response["server"]['addresses']['Intranet-10.142.153.0/24'][0]:
-                        if response["server"]['addresses']['Intranet-10.142.153.0/24'][0]['addr']:
-                            ip = response["server"]['addresses']['Intranet-10.142.153.0/24'][0]['addr']
+                if response["server"]['addresses'][properties.NETWORK_NAME]:
+                    if response["server"]['addresses'][properties.NETWORK_NAME][0]:
+                        if response["server"]['addresses'][properties.NETWORK_NAME][0]['addr']:
+                            ip = response["server"]['addresses'][properties.NETWORK_NAME][0]['addr']
                             if ip != "":
                                 name = response["server"]['name']
                                 port = '2375'
