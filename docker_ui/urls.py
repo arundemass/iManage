@@ -67,7 +67,6 @@ urlpatterns = [
     url(r'^GetHost/', views.GetHost),
     url(r'^OsHypervisorStats/', views.OsHypervisorStats),
     url(r'^OsHypervisorStatistics/', views.OsHypervisorStatistics),
-    url(r'^SSHConnect/', views.SSHConnect),
     url(r'^SSHConnect_File/', views.SSHConnect_File),
 
     url(r'^app_deployment/', include('app_deployment.urls')),
