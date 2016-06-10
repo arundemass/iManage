@@ -1,3 +1,18 @@
+sudo pip install django==1.8.2 
+sudo pip install django_extensions
+sudo pip install django_compressor
+sudo pip install mysql-python
+sudo apt-get install python-mysqldb
+sudo pip install django-appconf
+sudo pip install djangorestframework
+sudo pip install python-keystoneclient
+sudo pip install wrapt
+sudo pip install babel
+sudo pip install oslo.log
+sudo pip install python-openstackclient
+sudo pip install yaql
+sudo apt-get install mysql-server
+
 mysql -u root -e "DROP DATABASE IF EXISTS docker_ui";
 mysql -u root -e "DROP DATABASE IF EXISTS NFV_Dev";
 mysql -u root -e "CREATE DATABASE docker_ui";
