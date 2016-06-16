@@ -15,4 +15,5 @@
 
 from pbr import version
 
-version_info = version.VersionInfo('python-muranoclient')
+#version_info = version.VersionInfo('python-muranoclient')
+version_info = "2.3.4"
