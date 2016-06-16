@@ -22,9 +22,10 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 def get_resource(path):
     return os.path.join(_ROOT, 'data', path)
 
-version_info = pbr.version.VersionInfo('python-muranoclient')
+#version_info = pbr.version.VersionInfo('python-muranoclient')
 
-try:
-    __version__ = version_info.version_string()
-except AttributeError:
-    __version__ = None
+#try:
+#    __version__ = version_info.version_string()
+#except AttributeError:
+#    __version__ = None
+version_info = "2.3.4"
